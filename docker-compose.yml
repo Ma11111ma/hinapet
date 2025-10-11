@@ -1,8 +1,6 @@
-version: "3.9"
-
 services:
   db:
-    image: postgres:15
+    image: postgis/postgis:15-3.4
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -15,11 +13,16 @@ services:
 
   backend:
     build: ./backend
+    working_dir: /app
     restart: always
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db   # ← ここで backend は db に依存
-    
+      - db
+
 volumes:
   postgres_data:
