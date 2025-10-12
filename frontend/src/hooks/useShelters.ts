@@ -1,10 +1,11 @@
+//frontend/src/hooks/useShelters.ts
 import { useEffect, useState } from "react";
 
 export type Shelter = {
   id: number;
   name: string;
   address: string;
-  type: string;
+  type: "accompany" | "companion";
   capacity: string;
   lat: number;
   lng: number;
