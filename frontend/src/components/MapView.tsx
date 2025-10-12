@@ -1,7 +1,7 @@
 "use client";
-
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useShelters } from "../hooks/useShelters";
+import { useShelters, Shelter } from "../hooks/useShelters";
+import MapLegend from "./MapLegend";
 
 const containerStyle = { width: "100%", height: "600px" };
 const center = { lat: 35.3386, lng: 139.4916 }; // 藤沢駅付近（モック中心）
@@ -16,16 +16,31 @@ export default function MapView() {
     );
   if (error) return <p>{error}</p>;
 
+  // 避難タイプに応じた色設定
+  const getMarkerColor = (type: string) => {
+    switch (type) {
+      case "accompany":
+        return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"; // 同行
+      case "companion":
+        return "http://maps.google.com/mapfiles/ms/icons/green-dot.png"; // 同伴
+      default:
+        return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"; // 不明
+    }
+  };
+
   return (
     <LoadScript googleMapsApiKey={apiKey}>
-      <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={11}>
-        {shelters.map((s) => (
-          <Marker
-            key={s.id}
-            position={{ lat: s.lat, lng: s.lng }}
-            title={s.name}
-          />
-        ))}
+      <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={13}>
+        {Array.isArray(shelters) &&
+          shelters.map((shelter: Shelter) => (
+            <Marker
+              key={shelter.id}
+              position={{ lat: shelter.lat, lng: shelter.lng }}
+              title={shelter.name}
+              icon={getMarkerColor(shelter.type)}
+            />
+          ))}
+        <MapLegend />
       </GoogleMap>
     </LoadScript>
   );
