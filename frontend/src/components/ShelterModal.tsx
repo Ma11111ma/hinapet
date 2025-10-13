@@ -1,3 +1,5 @@
+"use client";
+import { useEffect } from "react";
 import React from "react";
 import { Shelter } from "../hooks/useShelters";
 
@@ -7,6 +9,27 @@ type Props = {
 };
 
 export default function ShelterModal({ shelter, onClose }: Props) {
+  //ESCキーでモーダル閉じる
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Esc") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    //背景スクロールを無効化
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    //イベント登録
+    window.addEventListener("keydown", handleKeydown);
+
+    //クリーンアップ(イベント解除＋スクロール復帰)
+    return () => {
+      window.removeEventListener("keydown", handleKeydown);
+      document.body.style.overflow = prevOverflow || "auto";
+    };
+  }, [onClose]);
   return (
     <div
       className="fixed inset-0 bg-black/50 flex justify-center item-center z-50"
