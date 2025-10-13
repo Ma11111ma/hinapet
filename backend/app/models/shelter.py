@@ -1,9 +1,8 @@
-# backend/app/models/shelter.py
 import enum, uuid
 from sqlalchemy import Column, String, Integer, Enum as SAEnum, text
 from sqlalchemy.dialects.postgresql import UUID
 from geoalchemy2 import Geography
-from app.db.base import Base
+from app.db.base_class import Base  # ← 差し替え
 
 class ShelterType(str, enum.Enum):
     companion = "companion"   # 同行
