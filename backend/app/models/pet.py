@@ -1,7 +1,7 @@
 import enum, uuid
 from sqlalchemy import Column, String, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from app.db.base import Base
+from app.db.base_class import Base  # ← 差し替え
 
 class PetSpecies(str, enum.Enum):
     dog = "dog"
