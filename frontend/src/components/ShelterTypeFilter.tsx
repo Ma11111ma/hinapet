@@ -1,19 +1,18 @@
 "use client";
+import type { ShelterType } from "../types/shelter";
 
 type Props = {
-  selected: string | null;
-  onSelect: (type: string | null) => void;
+  selected: ShelterType | null;
+  onSelect: (type: ShelterType | null) => void;
 };
 
 export default function ShelterTypeFilter({ selected, onSelect }: Props) {
-  const toggleType = (type: string) => {
-    if (selected === type) onSelect(null); //同じボタンを再クリックで解除
-    else onSelect(type);
-  };
+  const toggle = (t: ShelterType) => onSelect(selected === t ? null : t);
+
   return (
     <div className="flex gap-2 mt-2">
       <button
-        onClick={() => toggleType("accompany")}
+        onClick={() => toggle("accompany")}
         className={`px-4 py-2 rounded ${
           selected === "accompany"
             ? "bg-blue-600 text-white"
@@ -23,7 +22,7 @@ export default function ShelterTypeFilter({ selected, onSelect }: Props) {
         同行避難
       </button>
       <button
-        onClick={() => toggleType("companion")}
+        onClick={() => toggle("companion")}
         className={`px-4 py-2 rounded ${
           selected === "companion"
             ? "bg-green-600 text-white"
