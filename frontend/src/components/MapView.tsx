@@ -1,7 +1,9 @@
 "use client";
+import { useState } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { useShelters, Shelter } from "../hooks/useShelters";
 import MapLegend from "./MapLegend";
+import ShelterModal from "./ShelterModal";
 
 const containerStyle = { width: "100%", height: "600px" };
 const center = { lat: 35.3386, lng: 139.4916 }; // 藤沢駅付近（モック中心）
@@ -9,6 +11,7 @@ const center = { lat: 35.3386, lng: 139.4916 }; // 藤沢駅付近（モック�
 export default function MapView() {
   const { shelters, error } = useShelters();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
 
   if (!apiKey)
     return (
@@ -38,9 +41,17 @@ export default function MapView() {
               position={{ lat: shelter.lat, lng: shelter.lng }}
               title={shelter.name}
               icon={getMarkerColor(shelter.type)}
+              onClick={() => setSelectedShelter(shelter)}
             />
           ))}
         <MapLegend />
+        {/*==モーダル==*/}
+        {selectedShelter && (
+          <ShelterModal
+            shelter={selectedShelter}
+            onClose={() => setSelectedShelter(null)}
+          />
+        )}
       </GoogleMap>
     </LoadScript>
   );

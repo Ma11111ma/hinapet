@@ -1,6 +1,7 @@
 # backend/app/main.py
 from fastapi import FastAPI
-from app.routers import shelter   # 既存
+from app.routers import shelter  # ★ 単数で統一
+from app.routers import users 
 from fastapi.middleware.cors import CORSMiddleware
 
 # ① .env をロード（先頭付近に追加）
@@ -22,14 +23,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ③ 既存の shelter ルーター
-app.include_router(shelter.router)  # /shelters を提供
-
-# ④ premium ルーターの登録（←これを追加）
-from app.routers import premium
-app.include_router(premium.router)  # /premium/checkout など
-
-# ヘルスチェック
+app.include_router(shelter.router)  # ★ /shelters を提供
+app.include_router(users.router)  
+#　ヘルスチェック動作確認用
 @app.get("/system/health")
 def health():
     return {"status": "ok"}

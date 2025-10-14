@@ -1,17 +1,10 @@
 # backend/app/db/base.py
+# - Alembic の自動検出用に「全モデルを import して登録」する集約ファイル。
+# - アプリ本体のコードはここを import しない（= 循環防止）。
+from app.db.base_class import Base  # Base 定義だけを持ち込む
 
-
-from sqlalchemy.orm import DeclarativeBase
-
-class Base(DeclarativeBase):
-    pass
-
-# ---- Alembic の自動検出用に全モデルを import（順序大事）----
-# noqa で未使用警告を抑止。import するだけで Base.metadata に載る。
-from app.models.user import User          # noqa: F401
-from app.models.pet import Pet            # noqa: F401
-from app.models.shelter import Shelter    # noqa: F401
-from app.models.favorite import Favorite  # noqa: F401
-
-# チーム向け補足：エディタ補完用
-__all__ = ["Base", "User", "Pet", "Shelter", "Favorite"]
+# ↓ Alembic のために全モデルを import（未使用でもOKにするため noqa）
+from app.models.user import User            # noqa: F401
+from app.models.shelter import Shelter      # noqa: F401
+from app.models.pet import Pet              # noqa: F401
+from app.models.favorite import Favorite    # noqa: F401
