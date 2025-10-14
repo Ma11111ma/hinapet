@@ -1,15 +1,25 @@
-"use client";
-// pages/login.tsx ページ結合
-import React, { useState } from "react";
-import { LoginForm } from "@/components/LoginFormUI"; // ← 修正: LoginFormUI から import
+"use client"; 
+// src/app/login/page.tsx
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { LoginForm } from "@/components/LoginFormUI";
 import { useAuth } from "@/features/auth/useAuth";
 
 export default function LoginPage() {
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { user, signInWithEmail, signInWithGoogle, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // ログイン済みならダッシュボード等へリダイレクト
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard"); // 遷移先を適宜変更
+    }
+  }, [authLoading, user, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,8 +27,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmail(email, password);
-      // 成功したら onAuthStateChanged の flow で backend への verify が発生
-      // router.push("/") など遷移
+      // 成功したら onAuthStateChanged で backend verify が走る
     } catch (err: any) {
       setError(err.message ?? "ログインに失敗しました");
     } finally {
@@ -38,6 +47,7 @@ export default function LoginPage() {
     }
   };
 
+  // ローディング中は LoginForm を表示したまま、props で反映
   return (
     <LoginForm
       email={email}
@@ -46,7 +56,7 @@ export default function LoginPage() {
       onPasswordChange={setPassword}
       onSubmit={onSubmit}
       onGoogleSignIn={onGoogleSignIn}
-      loading={loading}
+      loading={loading || authLoading}
       error={error}
     />
   );
