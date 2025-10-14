@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 export type Shelter = {
-  id: number;
+  id: string;
   name: string;
   address: string;
   type: "accompany" | "companion";
@@ -31,6 +31,8 @@ export const useShelters = () => {
       if (keyword) params.append("keyword", keyword);
       if (category) params.append("category", category);
 
+      console.log("📡 Fetching shelters:", `${base}/shelters?${params}`);
+
       const res = await fetch(`${base}/shelters`);
       if (!res.ok) throw new Error(`API Error: ${res.status}`);
       const data = await res.json();
@@ -40,12 +42,9 @@ export const useShelters = () => {
         setShelters(data.items);
       } else if (Array.isArray(data)) {
         setShelters(data);
-      } else {
-        console.error("🚨 Unexpected API format:", data);
-        setShelters([]);
       }
     } catch (err) {
-      console.error(err);
+      console.error("❌ shelters fetch error:", err);
       setError("避難所データを取得できませんでした。");
     } finally {
       setLoading(false);

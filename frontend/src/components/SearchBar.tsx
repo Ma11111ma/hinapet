@@ -3,26 +3,22 @@
 import { useState, ChangeEvent } from "react";
 
 type Props = {
-  onSearch: (params: { keyword: string; category: string }) => void;
+  onSearch: (keyword: string) => void;
 };
 
 export default function SearchBar({ onSearch }: Props) {
   const [keyword, setKeyword] = useState("");
-  const [category, setCategory] = useState("");
 
-  const handleKeywordChange = (e: ChangeEvent<HTMLInputElement>) =>
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
-  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) =>
-    setCategory(e.target.value);
-
-  const handleSearchClick = () => {
-    onSearch({ keyword, category });
   };
 
+  const handleSearch = () => {
+    onSearch(keyword.trim());
+  };
   const handleClear = () => {
     setKeyword("");
-    setCategory("");
-    onSearch({ keyword: "", category: "" });
+    onSearch("");
   };
 
   return (
@@ -30,21 +26,13 @@ export default function SearchBar({ onSearch }: Props) {
       <input
         type="text"
         value={keyword}
-        onChange={handleKeywordChange}
+        onChange={handleChange}
         placeholder="避難所を検索"
         className="border p-2 rounded w-48"
       />
-      <select
-        value={category}
-        onChange={handleCategoryChange}
-        className="border p-2 rounded"
-      >
-        <option value="">すべてのカテゴリ</option>
-        <option value="companion">同伴避難</option>
-        <option value="accompany">同行避難</option>
-      </select>
+
       <button
-        onClick={handleSearchClick}
+        onClick={handleSearch}
         className="bg-blue-500 text-white px-4 rounded hover:bg-blue-600"
       >
         検索
