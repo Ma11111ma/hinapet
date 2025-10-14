@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useShelters, Shelter } from "../hooks/useShelters";
+import { useShelters } from "../hooks/useShelters";
+import type { Shelter, ShelterType } from "../types/shelter";
 import MapLegend from "./MapLegend";
 import ShelterModal from "./ShelterModal";
 import SearchBar from "./SearchBar";
@@ -15,14 +16,39 @@ export default function MapView() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
   const [keyword, setKeyword] = useState("");
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<ShelterType | null>(null);
 
   useEffect(() => {
-    fetchShelters();
-  }, []);
+    fetchShelters({});
+  }, [fetchShelters]);
+
+  const filteredShelters = useMemo(() => {
+    return shelters.filter((s) => {
+      const matchKeyword =
+        !keyword ||
+        s.name.toLowerCase().includes(keyword.toLowerCase()) ||
+        s.address.toLowerCase().includes(keyword.toLowerCase());
+      const matchType = !selectedType || s.type === selectedType;
+      return matchKeyword && matchType;
+    });
+  }, [shelters, keyword, selectedType]);
+
+  const handleSearch = (kw: string) => {
+    setKeyword(kw);
+  };
+
+  const handleTypeSelect = (t: ShelterType | null) => {
+    setSelectedType(selectedType === t ? null : t); // 再押下で解除
+  };
+
+  // クリア → 全件
+  const handleClearAll = () => {
+    setKeyword("");
+    setSelectedType(null);
+  };
 
   // 避難タイプに応じた色設定
-  const getMarkerColor = (type: string) => {
+  const getMarkerColor = (type: ShelterType) => {
     switch (type) {
       case "accompany":
         return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"; // 同行
@@ -43,10 +69,10 @@ export default function MapView() {
         <>
           {/* 🔍 検索UI*/}
           <div className="absolute top-4 left-4 z-10">
-            <SearchBar onSearch={setKeyword} />
+            <SearchBar onSearch={handleSearch} onClear={handleClearAll} />
             <ShelterTypeFilter
               selected={selectedType}
-              onSelect={setSelectedType}
+              onSelect={handleTypeSelect}
             />
           </div>
 
@@ -61,13 +87,15 @@ export default function MapView() {
               {error}
             </div>
           )}
+
+          {/* GoogleMap */}
           <LoadScript googleMapsApiKey={apiKey}>
             <GoogleMap
               mapContainerStyle={containerStyle}
               center={center}
               zoom={13}
             >
-              {shelters.map((shelter: Shelter) => (
+              {filteredShelters.map((shelter) => (
                 <Marker
                   key={shelter.id}
                   position={{ lat: shelter.lat, lng: shelter.lng }}
@@ -76,6 +104,7 @@ export default function MapView() {
                   onClick={() => setSelectedShelter(shelter)}
                 />
               ))}
+
               <MapLegend />
               {/*==モーダル==*/}
               {selectedShelter && (

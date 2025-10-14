@@ -4,21 +4,16 @@ import { useState, ChangeEvent } from "react";
 
 type Props = {
   onSearch: (keyword: string) => void;
+  onClear: () => void;
 };
 
-export default function SearchBar({ onSearch }: Props) {
+export default function SearchBar({ onSearch, onClear }: Props) {
   const [keyword, setKeyword] = useState("");
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setKeyword(e.target.value);
-  };
-
-  const handleSearch = () => {
-    onSearch(keyword.trim());
-  };
+  const handleSearch = () => onSearch(keyword);
   const handleClear = () => {
     setKeyword("");
-    onSearch("");
+    onClear();
   };
 
   return (
@@ -26,7 +21,9 @@ export default function SearchBar({ onSearch }: Props) {
       <input
         type="text"
         value={keyword}
-        onChange={handleChange}
+        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          setKeyword(e.target.value)
+        }
         placeholder="避難所を検索"
         className="border p-2 rounded w-48"
       />
