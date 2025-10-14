@@ -1,0 +1,10 @@
+# JS/TS/TSX/JSON/HTML/CSS は LF に統一/OSごとの改行コードの違いを統一
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# その他テキストファイルは自動判定
+* text=auto
