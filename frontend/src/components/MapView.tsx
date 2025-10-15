@@ -47,6 +47,7 @@ export default function MapView() {
     useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState<string | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   const getCurrentPosition = () => {
     if (!navigator.geolocation) {
@@ -68,9 +69,13 @@ export default function MapView() {
         //GoogleMapsから住所・施設名を取得
         const place = await geocodeCurrentPosition(coords.lat, coords.lng);
         setCurrentPlaceName(place);
+        setGeoError(null);
         alert(`現在地を取得しました:${place}`);
       },
       async () => {
+        setGeoError(
+          "位置情報を取得できませんでした。藤沢市役所を現在地にします"
+        );
         alert("位置情報を取得できませんでした。藤沢市役所を現在地にします。");
         const fallback = { lat: 35.3419, lng: 139.4916 };
         setCurrentPosition(fallback);
@@ -146,6 +151,11 @@ export default function MapView() {
 
   return (
     <div className="relative">
+      {geoError && (
+        <div className="absolute top-24 left-4 bg-red-100 text-red-700 p-2 rounded shadow">
+          {geoError}
+        </div>
+      )}
       {!apiKey ? (
         <p>Maps APIキーが設定されていません（frontend/.env.local）。</p>
       ) : error ? (
@@ -166,15 +176,6 @@ export default function MapView() {
               onSelect={handleTypeSelect}
             />
           </div>
-
-          {/*ルート情報パネル*/}
-          {distance && duration && (
-            <div className="absolute top-32 left-4 bg-white px-4 py-2 rounded shadow z-10 text-sm">
-              <p className="font-semibold text-gray-800">ルート情報</p>
-              <p>距離：{distance}</p>
-              <p>所要時間：約 {duration}</p>
-            </div>
-          )}
 
           {/* 読み込み中・エラー表示 */}
           {loading && (
@@ -229,14 +230,18 @@ export default function MapView() {
                   title={shelter.name}
                   icon={getMarkerColor(shelter.type)}
                   onClick={() => {
+                    setSelectedShelter(shelter);
                     if (!currentPosition) {
                       alert("まず現在地を取得してください");
                       return;
                     }
+                    setDirections(null);
+
                     calculateRoute(currentPosition, {
                       lat: shelter.lat,
                       lng: shelter.lng,
                     });
+                    setSelectedShelter(shelter);
                   }}
                 />
               ))}
@@ -255,8 +260,9 @@ export default function MapView() {
                       return;
                     }
                     calculateRoute(currentPosition, dest);
-                    setSelectedShelter(null);
                   }}
+                  distance={distance}
+                  duration={duration}
                 />
               )}
             </GoogleMap>

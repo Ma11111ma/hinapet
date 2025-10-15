@@ -6,10 +6,18 @@ import type { Shelter } from "../types/shelter";
 type Props = {
   shelter: Shelter;
   onClose: () => void;
-  onRoute?: (destination: google.maps.LatLngLiteral) => void;
+  onRoute: (dest: google.maps.LatLngLiteral) => void;
+  distance?: string | null;
+  duration?: string | null;
 };
 
-export default function ShelterModal({ shelter, onClose, onRoute }: Props) {
+export default function ShelterModal({
+  shelter,
+  onClose,
+  onRoute,
+  distance,
+  duration,
+}: Props) {
   //ESCキーでモーダル閉じる
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
@@ -45,15 +53,15 @@ export default function ShelterModal({ shelter, onClose, onRoute }: Props) {
           避難区分：{shelter.type === "accompany" ? "同行避難" : "同伴避難"}
         </p>
         <p className="text-gray-700 mb-2">収容人数：{shelter.capacity}</p>
-        <p className="text-gray-700 mb-2"></p>
+
+        {distance && duration && (
+          <div className="mt-3 bg-gray-100 p-2 rounded">
+            <p className="text-sm">距離：{distance}</p>
+            <p className="text-sm">所要時間：約 {duration}</p>
+          </div>
+        )}
 
         <div className="mt-6 flex justify-end">
-          <button
-            onClick={() => onRoute?.({ lat: shelter.lat, lng: shelter.lng })}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            ルート表示
-          </button>
           <button
             onClick={onClose}
             className="px-5 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
