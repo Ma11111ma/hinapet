@@ -1,47 +1,55 @@
-# backend/app/main.py
 from __future__ import annotations
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-# 既存のルーター
-from app.routers import shelter  # /shelters
-from app.routers import users    # /users
-# ★ 追加: /favorites
-from app.routers import favorites
-
-# ★ 共通例外ハンドラ
-from app.core.errors import register_exception_handlers
-
-# ① .env をロード（既存方針を踏襲）
-import os
 from dotenv import load_dotenv
-load_dotenv()  # backend/.env を読み込む
 
-app = FastAPI(title="Pet Evacuation App API")
+# ルーター
+from app.routers import shelter, users, favorites, premium  # ← premium を追加！
 
-# ② CORS（FRONTEND_URL + Vercel配下を許可）
-#    ※ Starlette CORSは "https://*.vercel.app" のワイルドカードを
-#       allow_origins では解釈しないため、allow_origin_regex を併用
+# 共通エラーハンドラ
+from app.core.errors import register_exception_handlers
+from app.core.request_id import RequestIDMiddleware
+
+load_dotenv()
+
+# Swagger タグ
+tags_metadata = [
+    {"name": "shelters",  "description": "避難所検索・詳細"},
+    {"name": "users",     "description": "ユーザー情報（認証必須）"},
+    {"name": "favorites", "description": "お気に入り管理（認証必須）"},
+    {"name": "premium",   "description": "プレミアム（Stripe決済 / 認証必須）"},  # ← 追加
+    {"name": "admin",     "description": "管理系（将来拡張）"},
+]
+
+app = FastAPI(title="Pet Evacuation App API", openapi_tags=tags_metadata)
+
+# (1) trace_id ミドルウェア
+app.add_middleware(RequestIDMiddleware)
+
+# (2) CORS
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[frontend_url],
-    allow_origin_regex=r"https://.*\.vercel\.app",  # ← Vercel配下を許可
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=86400,
 )
 
-# ③ 共通例外ハンドラを一括登録（http / validation / integrity / unexpected）
+# (3) 例外ハンドラ
 register_exception_handlers(app)
 
-# ④ ルーター登録
-app.include_router(shelter.router)    # /shelters
-app.include_router(users.router)      # /users
-app.include_router(favorites.router)  # /favorites ★追加
+# (4) ルーター登録
+app.include_router(shelter.router)
+app.include_router(users.router)
+app.include_router(favorites.router)
+app.include_router(premium.router)  # ← 追加
 
-# ⑤ ヘルスチェック
-@app.get("/system/health")
+# (5) ヘルスチェック
+@app.get("/system/health", tags=["admin"], summary="ヘルスチェック")
 def health():
     return {"status": "ok"}
