@@ -1,72 +1,57 @@
-"use client"; 
-// src/app/login/page.tsx
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { LoginForm } from "@/components/LoginFormUI";
+import LoginForm from "@/components/LoginFormUI";
 import { useAuth } from "@/features/auth/useAuth";
 
 export default function LoginPage() {
-  const { user, signInWithEmail, signInWithGoogle, loading: authLoading } = useAuth();
   const router = useRouter();
-
+  const { signInWithEmail, signInWithGoogle, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // ログイン済みならダッシュボード等へリダイレクト
-  useEffect(() => {
-    if (!authLoading && user) {
-      router.push("/dashboard"); // 遷移先を適宜変更
-    }
-  }, [authLoading, user, router]);
-
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
     try {
       await signInWithEmail(email, password);
-      // 成功したら onAuthStateChanged で backend verify が走る
+      router.push("/");
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("ログインに失敗しました");
-      }
+      setError(err instanceof Error ? err.message : "ログインに失敗しました");
     } finally {
       setLoading(false);
     }
   };
 
-  const onGoogleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     setError(null);
     try {
       await signInWithGoogle();
+      router.push("/");
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Googleログインに失敗しました");
-      }
+      setError(err instanceof Error ? err.message : "Googleログインに失敗しました");
     } finally {
       setLoading(false);
     }
   };
-  
 
-  // ローディング中は LoginForm を表示したまま、props で反映
   return (
-    <LoginForm
-      email={email}
-      onEmailChange={setEmail}
-      password={password}
-      onPasswordChange={setPassword}
-      onSubmit={onSubmit}
-      onGoogleSignIn={onGoogleSignIn}
-      loading={loading || authLoading}
-      error={error}
-    />
+    <main className="flex justify-center items-center min-h-screen bg-gray-50">
+      <LoginForm
+        email={email}
+        password={password}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={handleSubmit}
+        onGoogleSignIn={handleGoogleSignIn}
+        loading={loading || authLoading}
+        error={error}
+      />
+    </main>
   );
 }

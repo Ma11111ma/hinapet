@@ -1,63 +1,71 @@
-import React, { useState } from "react";
-import { LoginForm } from "./LoginFormUI"; // ← 修正済み
-import { auth, googleProvider } from "../lib/firebaseClient";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { postSession } from "../lib/apiClient";
+"use client";
 
-const LoginFormContainer: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+import React from "react";
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const idToken = await userCredential.user.getIdToken();
-    await postSession(idToken);
-    // ログイン成功後の処理（例: ページ遷移）
-  } catch (err) {
-    if (err instanceof Error) {
-      setError(err.message);
-    } else {
-      setError("ログインに失敗しました");
-    }
-  } finally {
-    setLoading(false);
-  }
-  
+type Props = {
+  email: string;
+  password: string;
+  onEmailChange: (value: string) => void;
+  onPasswordChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onGoogleSignIn: () => void;
+  loading: boolean;
+  error: string | null;
+};
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      await postSession(idToken);
-      // ログイン成功後の処理
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Googleログインに失敗しました");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-
+const LoginForm: React.FC<Props> = ({
+  email,
+  password,
+  onEmailChange,
+  onPasswordChange,
+  onSubmit,
+  onGoogleSignIn,
+  loading,
+  error,
+}) => {
   return (
-    <LoginForm
-      email={email}
-      onEmailChange={setEmail}
-      password={password}
-      onPasswordChange={setPassword}
-      onSubmit={handleSubmit}
-      onGoogleSignIn={handleGoogleSignIn}
-      loading={loading}
-      error={error}
-    />
+    <form onSubmit={onSubmit} className="flex flex-col gap-4 p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">メールアドレス</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">パスワード</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => onPasswordChange(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
+          required
+        />
+      </div>
+
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+      >
+        {loading ? "ログイン中..." : "ログイン"}
+      </button>
+
+      <button
+        type="button"
+        onClick={onGoogleSignIn}
+        className="mt-2 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
+      >
+        Googleでログイン
+      </button>
+    </form>
   );
 };
 
-export default LoginFormContainer;
+export default LoginForm;

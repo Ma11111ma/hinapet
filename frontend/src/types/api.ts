@@ -4,7 +4,7 @@ export type AuthVerifyRequest = {
   };
   
   export type AuthVerifyResponse = {
-    uid: string;
+    id: string;
     email?: string;
     name?: string | null;
     // 必要なら roles など
@@ -18,3 +18,5 @@ export type AuthVerifyRequest = {
     createdAt?: string;
     // 追加フィールド（pets など）
   };
+
+  export type LoginResponse = AuthVerifyResponse;

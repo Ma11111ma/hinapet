@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 // Provider コンポーネント
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthVerifyResponse | null>(null);
-  const [loading, setLoading] = useState(true); // 初期ロード中は true
+  const [loading, setLoading] = useState(true); // 初期ロード時は true
 
   // Firebase 認証状態変化時の処理
   useEffect(() => {
