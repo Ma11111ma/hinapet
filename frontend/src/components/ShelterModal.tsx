@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import React from "react";
 import type { Shelter } from "../types/shelter";
-import { useCurrentPosition } from "@/hooks/useCurrentPosition";
 
 type Props = {
   shelter: Shelter;

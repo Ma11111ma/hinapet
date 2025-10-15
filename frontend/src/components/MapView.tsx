@@ -4,6 +4,7 @@ import {
   GoogleMap,
   LoadScript,
   Marker,
+  InfoWindow,
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import { useShelters } from "../hooks/useShelters";
@@ -13,15 +14,32 @@ import ShelterModal from "./ShelterModal";
 import SearchBar from "./SearchBar";
 import ShelterTypeFilter from "./ShelterTypeFilter";
 
+//===GoogleMapsGeocoding API===
+const geocodeCurrentPosition = async (lat: number, lng: number) => {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (data.results && data.results[0]) {
+    return data.results[0].formatted_address;
+  }
+  return "不明な位置";
+};
+
 const containerStyle = { width: "100%", height: "600px" };
 const center = { lat: 35.3386, lng: 139.4916 }; // 藤沢駅付近（モック中心）
 
 export default function MapView() {
   const { shelters, fetchShelters, loading, error } = useShelters();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  //==状態管理===
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
   const [keyword, setKeyword] = useState("");
   const [selectedType, setSelectedType] = useState<ShelterType | null>(null);
+  const [showCurrentInfo, setShowCurrentInfo] = useState(false);
+  const [currentPlaceName, setCurrentPlaceName] = useState<string>("");
   const [currentPosition, setCurrentPosition] =
     useState<google.maps.LatLngLiteral | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -35,37 +53,28 @@ export default function MapView() {
       alert("このブラウザは位置情報取得に対応していません。");
       const fallback = { lat: 35.3419, lng: 139.4916 };
       setCurrentPosition(fallback);
-
-      // ✅ mapRef.current が null でない時だけ安全に呼び出す
-      if (mapRef.current) {
-        mapRef.current.panTo(fallback);
-      }
+      setCurrentPlaceName("藤沢市役所");
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const coords = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
         setCurrentPosition(coords);
-        // 安全チェックを追加
-        if (mapRef.current) {
-          mapRef.current.panTo(coords);
-        }
-        alert("現在地を取得しました");
+
+        //GoogleMapsから住所・施設名を取得
+        const place = await geocodeCurrentPosition(coords.lat, coords.lng);
+        setCurrentPlaceName(place);
+        alert(`現在地を取得しました:${place}`);
       },
-      (err) => {
-        console.warn("位置情報取得エラー:", err.message);
-        alert(
-          "位置情報を取得できませんでした(初期値として藤沢市役所を使用します)"
-        );
+      async () => {
+        alert("位置情報を取得できませんでした。藤沢市役所を現在地にします。");
         const fallback = { lat: 35.3419, lng: 139.4916 };
         setCurrentPosition(fallback);
-        if (mapRef.current) {
-          mapRef.current.panTo(fallback);
-        }
+        setCurrentPlaceName("藤沢市役所");
       }
     );
   };
@@ -95,7 +104,7 @@ export default function MapView() {
       }
     );
   };
-
+  //==初回ロード・避難所データ取得==
   useEffect(() => {
     fetchShelters({});
   }, [fetchShelters]);
@@ -118,8 +127,6 @@ export default function MapView() {
   const handleTypeSelect = (t: ShelterType | null) => {
     setSelectedType(selectedType === t ? null : t); // 再押下で解除
   };
-
-  // クリア → 全件
   const handleClearAll = () => {
     setKeyword("");
     setSelectedType(null);
@@ -146,12 +153,6 @@ export default function MapView() {
       ) : (
         <>
           {/* 🔍 検索UI*/}
-          {distance && duration && (
-            <div className="absolute top-32 left-4 bg-white px-4 py-2 rounded shadow z-10 text-sm">
-              <p>距離：{distance}</p>
-              <p>所要時間：約 {duration}</p>
-            </div>
-          )}
           <div className="absolute top-4 left-4 z-10 space-y-2 bg-white p-3 rounded shadow">
             <button
               onClick={getCurrentPosition}
@@ -165,6 +166,15 @@ export default function MapView() {
               onSelect={handleTypeSelect}
             />
           </div>
+
+          {/*ルート情報パネル*/}
+          {distance && duration && (
+            <div className="absolute top-32 left-4 bg-white px-4 py-2 rounded shadow z-10 text-sm">
+              <p className="font-semibold text-gray-800">ルート情報</p>
+              <p>距離：{distance}</p>
+              <p>所要時間：約 {duration}</p>
+            </div>
+          )}
 
           {/* 読み込み中・エラー表示 */}
           {loading && (
@@ -188,14 +198,30 @@ export default function MapView() {
                 mapRef.current = map;
               }}
             >
-              {/* 現在地ピンを表示 */}
+              {/* 現在地ピン */}
               {currentPosition && (
                 <Marker
                   position={currentPosition}
                   icon="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                  title="現在地（藤沢市役所またはGPS取得位置）"
+                  onClick={() => setShowCurrentInfo(!showCurrentInfo)}
                 />
               )}
+
+              {/*現在地のInfoウィンドウ*/}
+              {showCurrentInfo && currentPosition && (
+                <InfoWindow
+                  position={currentPosition}
+                  onCloseClick={() => setShowCurrentInfo(false)}
+                >
+                  <div className="text-sm">
+                    <p className="font-semibold text-gray-800">現在地</p>
+                    <p className="text-gray-600">
+                      {currentPlaceName || "取得中..."}
+                    </p>
+                  </div>
+                </InfoWindow>
+              )}
+
               {filteredShelters.map((shelter) => (
                 <Marker
                   key={shelter.id}
