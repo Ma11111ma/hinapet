@@ -1,14 +1,6 @@
-// lib/firebaseClient.ts
+// frontend/src/lib/firebaseClient.ts
 import { initializeApp, getApps } from "firebase/app";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  User
-} from "firebase/auth";
+import { getAuth, GoogleAuthProvider, User } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,

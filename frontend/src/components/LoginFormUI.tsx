@@ -31,10 +31,6 @@ export const LoginForm: React.FC<Props> = ({
     transition: "border-color 0.2s",
   };
 
-  const inputFocusStyle: React.CSSProperties = {
-    borderColor: "#0070f3",
-  };
-
   return (
     <form
       onSubmit={onSubmit}

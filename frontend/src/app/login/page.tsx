@@ -28,8 +28,12 @@ export default function LoginPage() {
     try {
       await signInWithEmail(email, password);
       // 成功したら onAuthStateChanged で backend verify が走る
-    } catch (err: any) {
-      setError(err.message ?? "ログインに失敗しました");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("ログインに失敗しました");
+      }
     } finally {
       setLoading(false);
     }
@@ -40,12 +44,17 @@ export default function LoginPage() {
     setError(null);
     try {
       await signInWithGoogle();
-    } catch (err: any) {
-      setError(err.message ?? "Googleログインに失敗しました");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Googleログインに失敗しました");
+      }
     } finally {
       setLoading(false);
     }
   };
+  
 
   // ローディング中は LoginForm を表示したまま、props で反映
   return (

@@ -1,22 +1,14 @@
-// src/app/layout.tsx
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// frontend/src/app/layout.tsx
 import "./globals.css";
-import { AuthProvider } from "@/features/auth/useAuth";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { AuthProvider } from "@features/auth/AuthProvider"; // ✅ 追加！
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Pet Evacuation App",
-  description: "緊急時にペットと避難できるアプリ",
+  description: "避難時にペットと一緒に行動できる支援アプリ",
 };
 
 export default function RootLayout({
@@ -26,10 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <AuthProvider>{children}</AuthProvider>
+      <body className={inter.className}>
+        {/* ✅ AuthProvider で全体をラップする */}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

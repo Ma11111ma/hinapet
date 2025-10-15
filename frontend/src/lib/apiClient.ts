@@ -1,16 +1,18 @@
-//APIクライアント
+// frontend/src/lib/apiClient.ts
 import { LoginResponse } from "../types/api";
 
 export async function postSession(idToken: string): Promise<LoginResponse> {
-    const firebaseConfig = {
-        apiKey: "AIzaSyAAhyYu7l_vdi6LubklwaprMTi8Fietfio",
-        authDomain: "pet-evacuation-app.firebaseapp.com",
-        projectId: "pet-evacuation-app",
-        storageBucket: "pet-evacuation-app.appspot.com",
-        messagingSenderId: "414891504745",
-        appId: "1:414891504745:web:19a74b8a01598708409ef8",
-      };
-      
+  const res = await fetch("/api/auth/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ idToken }),
+  });
 
-  return res.json() as Promise<LoginResponse>;
+  if (!res.ok) {
+    throw new Error("Failed to verify session");
+  }
+
+  return (await res.json()) as LoginResponse;
 }
