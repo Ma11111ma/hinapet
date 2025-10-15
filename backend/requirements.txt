@@ -8,6 +8,5 @@ psycopg2-binary==2.9.7
 SQLAlchemy==2.0.22
 alembic==1.13.2
 geoalchemy2==0.15.2
-firebase-admin==7.1.0
 stripe
-
+firebase-admin==7.1.0
