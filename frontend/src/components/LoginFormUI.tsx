@@ -1,7 +1,7 @@
 // frontend/src/components/LoginFormUI.tsx
 "use client";
 
-import React, { Dispatch, SetStateAction, FormEvent } from "react";
+import React, { FormEvent } from "react";
 
 type Props = {
   email: string;
