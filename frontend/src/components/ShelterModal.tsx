@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import React from "react";
-import { Shelter } from "../hooks/useShelters";
+import type { Shelter } from "../types/shelter";
 
 type Props = {
   shelter: Shelter;

@@ -1,11 +1,19 @@
-import uuid
-from sqlalchemy import Column, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, PrimaryKeyConstraint, text
 from sqlalchemy.dialects.postgresql import UUID
-from app.db.base_class import Base  # ← 差し替え
+from sqlalchemy.types import DateTime
+from app.db.base_class import Base
 
 class Favorite(Base):
     __tablename__ = "favorites"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
-    shelter_id = Column(UUID(as_uuid=True), ForeignKey("shelters.id", ondelete="CASCADE"), index=True, nullable=False)
-    __table_args__ = (UniqueConstraint("user_id", "shelter_id", name="uq_fav_user_shelter"),)
+
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+                     nullable=False, index=True, primary_key=True)
+    shelter_id = Column(UUID(as_uuid=True), ForeignKey("shelters.id", ondelete="CASCADE"),
+                        nullable=False, index=True, primary_key=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=text("now()"))
+    updated_at = Column(DateTime(timezone=True), server_default=text("now()"))
+
+    __table_args__ = (
+        PrimaryKeyConstraint("user_id", "shelter_id", name="pk_favorites_user_shelter"),
+    )

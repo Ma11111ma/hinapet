@@ -1,24 +1,34 @@
 //frontend/src/hooks/useShelters.ts
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
+import type { Shelter, ShelterType } from "../types/shelter";
 
-export type Shelter = {
-  id: number;
-  name: string;
-  address: string;
-  type: "accompany" | "companion";
-  capacity: string;
-  lat: number;
-  lng: number;
+type FetchParams = {
+  keyword?: string;
+  category?: ShelterType;
 };
 
 export const useShelters = () => {
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchShelters = async () => {
+  const fetchShelters = useCallback(
+    async ({ keyword, category }: FetchParams = {}) => {
       try {
+        setLoading(true);
+        setError(null);
+
         const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+        const params = new URLSearchParams();
+        if (keyword && keyword.trim() !== "") {
+          params.append("keyword", keyword.trim());
+        }
+        if (category && ["accompany", "companion"].includes(category)) {
+          params.append("category", category);
+        }
+
+        console.log("📡 Fetching shelters:", `${base}/shelters?${params}`);
+
         const res = await fetch(`${base}/shelters`);
         if (!res.ok) throw new Error(`API Error: ${res.status}`);
         const data = await res.json();
@@ -26,17 +36,18 @@ export const useShelters = () => {
 
         if (Array.isArray(data.items)) {
           setShelters(data.items);
-        } else {
-          console.error("🚨 Unexpected API format:", data);
-          setShelters([]);
+        } else if (Array.isArray(data)) {
+          setShelters(data);
         }
       } catch (err) {
-        console.error(err);
+        console.error("❌ shelters fetch error:", err);
         setError("避難所データを取得できませんでした。");
+      } finally {
+        setLoading(false);
       }
-    };
-    fetchShelters();
-  }, []);
+    },
+    []
+  );
 
-  return { shelters, error };
+  return { shelters, error, loading, fetchShelters };
 };
