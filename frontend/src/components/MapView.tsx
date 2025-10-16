@@ -30,6 +30,13 @@ const geocodeCurrentPosition = async (lat: number, lng: number) => {
 const containerStyle = { width: "100%", height: "600px" };
 const center = { lat: 35.3386, lng: 139.4916 }; // 藤沢駅付近（モック中心）
 
+//藤沢市役所（フォールバック用）
+const DEFAULT_LOCATION: google.maps.LatLngLiteral = {
+  lat: 35.3419,
+  lng: 139.4916,
+};
+const DEFAULT_LOCATION_LABEL = "藤沢市役所";
+
 export default function MapView() {
   const { shelters, fetchShelters, loading, error } = useShelters();
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -52,9 +59,8 @@ export default function MapView() {
   const getCurrentPosition = () => {
     if (!navigator.geolocation) {
       alert("このブラウザは位置情報取得に対応していません。");
-      const fallback = { lat: 35.3419, lng: 139.4916 };
-      setCurrentPosition(fallback);
-      setCurrentPlaceName("藤沢市役所");
+      setCurrentPosition(DEFAULT_LOCATION);
+      setCurrentPlaceName(DEFAULT_LOCATION_LABEL);
       return;
     }
 
@@ -77,9 +83,9 @@ export default function MapView() {
           "位置情報を取得できませんでした。藤沢市役所を現在地にします"
         );
         alert("位置情報を取得できませんでした。藤沢市役所を現在地にします。");
-        const fallback = { lat: 35.3419, lng: 139.4916 };
-        setCurrentPosition(fallback);
-        setCurrentPlaceName("藤沢市役所");
+        setCurrentPosition(DEFAULT_LOCATION);
+        setCurrentPlaceName(DEFAULT_LOCATION_LABEL);
+        setGeoError("位置情報取得に失敗しました（藤沢市役所を使用中）");
       }
     );
   };
