@@ -4,6 +4,11 @@ from app.routers import shelter  # ★ 単数で統一
 from app.routers import users 
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routers import premium
+from app.routers import stripe_webhook  # ← 追加
+
+
+
 # ① .env をロード（先頭付近に追加）
 import os
 from dotenv import load_dotenv
@@ -25,6 +30,9 @@ app.add_middleware(
 
 app.include_router(shelter.router)  # ★ /shelters を提供
 app.include_router(users.router)  
+
+app.include_router(premium.router)       # 既存
+app.include_router(stripe_webhook.router)  # ← 追加
 #　ヘルスチェック動作確認用
 @app.get("/system/health")
 def health():

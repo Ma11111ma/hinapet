@@ -85,7 +85,7 @@ async def webhook(
         raise HTTPException(status_code=500, detail="Webhook secret is not set")
     if not stripe_signature:
         raise HTTPException(status_code=400, detail="Missing Stripe-Signature header")
-
+    print("あ")
     # 2) 署名検証
     payload = await request.body()
     try:
