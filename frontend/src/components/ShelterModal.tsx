@@ -65,7 +65,10 @@ export default function ShelterModal({
             <p className="text-sm">距離：{distance}</p>
             <p className="text-sm">所要時間：約 {duration}</p>
             <p className="text-sm">
-              {crowdLabelMap[shelter.crowd_level ?? "empty"]}
+              混雑度：
+              {shelter.crowd_level === "empty" && "空きあり"}
+              {shelter.crowd_level === "few" && "残りわずか"}
+              {shelter.crowd_level === "full" && "満員"}
             </p>
           </div>
         )}

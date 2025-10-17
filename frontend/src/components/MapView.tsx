@@ -162,6 +162,14 @@ export default function MapView() {
     });
   }, [shelters, keyword, selectedType]);
 
+  // 混雑度によるソート（空きあり → 満員）
+  const sortedShelters = useMemo(() => {
+    const order = { empty: 1, few: 2, full: 3 };
+    return [...filteredShelters].sort(
+      (a, b) => order[a.crowd_level ?? "full"] - order[b.crowd_level ?? "full"]
+    );
+  }, [filteredShelters]);
+
   const handleSearch = (kw: string) => {
     setKeyword(kw);
   };
@@ -260,7 +268,7 @@ export default function MapView() {
                 </InfoWindow>
               )}
 
-              {filteredShelters.map((shelter) => (
+              {sortedShelters.map((shelter) => (
                 <Marker
                   key={shelter.id}
                   position={{ lat: shelter.lat, lng: shelter.lng }}
