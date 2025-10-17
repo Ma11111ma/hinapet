@@ -6,6 +6,7 @@ from app.core.deps import get_db
 from app.crud.shelter import get_shelters, get_shelter_by_id
 from app.schemas.shelter import ShelterItem, ShelterListResponse
 from app.core.errors import ErrorResponse  # ✅ ErrorResponse 型を参照
+from app.models.shelter import CrowdLevel, Shelter
 
 router = APIRouter(prefix="/shelters", tags=["shelters"])
 
@@ -62,3 +63,31 @@ def shelter_detail(shelter_id: str, db: Session = Depends(get_db)) -> ShelterIte
         # ✅ JSONResponse ではなく HTTPException で統一
         raise HTTPException(status_code=404, detail="Shelter not found")
     return item
+
+@router.patch(
+    "/{shelter_id}/crowd",
+    summary= "避難所の混雑度を更新（管理者用）",
+    responses={
+        200: {"description": "更新に成功しました"},
+        400: {"description": "Invalid crowd level", "model": ErrorResponse },
+        404: {"description": "Shelterが見つかりません", "model": ErrorResponse },
+        500: {"description": "サーバーエラーです", "model": ErrorResponse },
+    },
+)
+def update_crowd_level(
+    shelter_id: str,
+    level: CrowdLevel,  # ← Enum型で指定
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    管理者が避難所の混雑度を更新するエンドポイント。
+    例: PATCH /shelters/1/crowd?level=few
+    """
+    shelter = db.query(Shelter).filter(Shelter.id == shelter_id).first()
+    if not shelter:
+        raise HTTPException(status_code=404, detail="Shelter not found")
+
+    shelter.crowd_level = level
+    db.commit()
+    db.refresh(shelter)
+    return{ "id": shelter.id, "crowd_level": shelter.crowd_level}

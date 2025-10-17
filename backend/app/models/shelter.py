@@ -1,5 +1,6 @@
 import enum, uuid
-from sqlalchemy import Column, String, Integer, Boolean, Text, Date, Enum as SAEnum, text
+from sqlalchemy import Column, String, Integer, Boolean, Text, Date, Float, Enum as SAEnum, text
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from geoalchemy2 import Geography
 from app.db.base_class import Base
@@ -7,6 +8,11 @@ from app.db.base_class import Base
 class ShelterType(str, enum.Enum):
     companion = "companion"   # 同行
     accompany = "accompany"   # 同伴
+
+class CrowdLevel(str, enum.Enum):
+    empty = "empty"
+    few = "few"
+    full = "full"
 
 class Shelter(Base):
     __tablename__ = "shelters"
@@ -20,6 +26,7 @@ class Shelter(Base):
     type = Column(SAEnum(ShelterType, name="shelter_type"), nullable=False)
     capacity = Column(Integer, server_default=text("0"))
     geom = Column(Geography(geometry_type="POINT", srid=4326), nullable=False)
+    crowd_level = Column(SqlEnum(CrowdLevel), nullable=True, default=CrowdLevel.empty)
 
     # PDF由来
     is_emergency_flood = Column(Boolean, server_default=text("false"))

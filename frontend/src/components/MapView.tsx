@@ -13,18 +13,36 @@ import MapLegend from "./MapLegend";
 import ShelterModal from "./ShelterModal";
 import SearchBar from "./SearchBar";
 import ShelterTypeFilter from "./ShelterTypeFilter";
+import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 
 //===GoogleMapsGeocoding API===
 const geocodeCurrentPosition = async (lat: number, lng: number) => {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
-  const res = await fetch(url);
-  const data = await res.json();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL; // http://localhost:8000
+  const url = `${apiUrl}/geocode?address=${lat},${lng}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("Geocoding API error:", res.statusText);
+      return "位置情報を取得できません";
+    }
 
-  if (data.results && data.results[0]) {
-    return data.results[0].formatted_address;
+    const data = await res.json();
+
+    // FastAPI 側が Google API のレスポンスをそのまま返す場合
+    if (data.results && data.results[0]) {
+      return data.results[0].formatted_address;
+    }
+
+    // 独自形式で返している場合（Aチームが {"address": "..."} と返すケース）
+    if (data.address) {
+      return data.address;
+    }
+
+    return "不明な位置";
+  } catch (error) {
+    console.error("Error fetching geocode:", error);
+    return "位置情報エラー";
   }
-  return "不明な位置";
 };
 
 const containerStyle = { width: "100%", height: "600px" };
@@ -55,6 +73,12 @@ export default function MapView() {
   const [distance, setDistance] = useState<string | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const {
+    distances,
+    durations,
+    calculate,
+    loading: distLoading,
+  } = useDistanceMatrix();
 
   const getCurrentPosition = () => {
     if (!navigator.geolocation) {
@@ -119,6 +143,13 @@ export default function MapView() {
   useEffect(() => {
     fetchShelters({});
   }, [fetchShelters]);
+
+  // ✅ 距離自動計算
+  useEffect(() => {
+    if (currentPosition && shelters.length > 0) {
+      calculate(currentPosition, shelters);
+    }
+  }, [currentPosition, shelters, calculate]);
 
   const filteredShelters = useMemo(() => {
     return shelters.filter((s) => {
@@ -267,8 +298,8 @@ export default function MapView() {
                     }
                     calculateRoute(currentPosition, dest);
                   }}
-                  distance={distance}
-                  duration={duration}
+                  distance={distances[String(selectedShelter.id)]?.text ?? "-"}
+                  duration={durations[String(selectedShelter.id)]?.text ?? "-"}
                 />
               )}
             </GoogleMap>
