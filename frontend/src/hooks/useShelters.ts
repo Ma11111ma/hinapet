@@ -18,7 +18,8 @@ export const useShelters = () => {
         setLoading(true);
         setError(null);
 
-        const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+        const base =
+          process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
         const params = new URLSearchParams();
         if (keyword && keyword.trim() !== "") {
           params.append("keyword", keyword.trim());
