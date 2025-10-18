@@ -2,7 +2,7 @@
 
 ## 概要
 
-藤沢市内の避難所情報を「同行・同伴・分離」で可視化し、ユーザーの事前備え（飼い主・ペット情報）と災害時の行動を支援する REST API です。  
+藤沢市内の避難所情報を「同行・同伴」で可視化し、ユーザーの事前備え（飼い主・ペット情報）と災害時の行動を支援する REST API です。  
 プレミアム登録ユーザーに **家族安否共有・備蓄チェックリスト・リマインダー・医療施設検索** を提供します。
 
 **ベース**: FastAPI / 認証: Firebase ID Token / 形式: JSON  
@@ -95,6 +95,25 @@
 | `/family/members`                   | GET/POST/PUT/DELETE | 家族メンバー CRUD |  🔒  |
 | `/family/checkin`                   | POST                | 安否報告の追加    |  🔒  |
 | `/family/checkin/latest?member_id=` | GET                 | 最新安否取得      |  🔒  |
+
+**レスポンス項目追加**
+
+| フィールド名        | 型             | 説明                                                           |
+| ------------------- | -------------- | -------------------------------------------------------------- |
+| reported_by_user_id | string \| null | 安否を記録したユーザー ID。家族（ゲストリンク）の場合は null。 |
+
+**レスポンス例（POST /family/checkin）**
+
+```json
+{
+  "id": "…",
+  "member_id": "…",
+  "status": "safe",
+  "message": "無事です",
+  "reported_at": "2025-10-17T01:23:45Z",
+  "reported_by_user_id": null
+}
+```
 
 ### Checklists（`CHECKLISTS`）
 
