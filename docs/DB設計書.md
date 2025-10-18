@@ -48,23 +48,37 @@
 
 ### SHELTERS（避難所 + 最新ステータス統合）
 
-| カラム名           | 型                    | 制約 / デフォルト値 | 説明                   |
-| ------------------ | --------------------- | ------------------- | ---------------------- |
-| id                 | uuid                  | PK                  | 避難所 ID              |
-| name               | text                  | NOT NULL            | 名称                   |
-| address            | text                  |                     | 住所                   |
-| phone              | text                  |                     | 電話                   |
-| website_url        | text                  |                     | 公式 URL               |
-| type               | shelter_type          |                     | 区分（同行/同伴/分離） |
-| capacity           | integer               |                     | 収容人数               |
-| geom               | geography(Point,4326) | NOT NULL            | 位置情報               |
-| latest_status      | shelter_open_status   |                     | 最新状態               |
-| latest_congestion  | integer               |                     | 混雑度(%)              |
-| latest_reported_at | timestamptz           |                     | 最終更新               |
-| pin_icon           | text                  |                     | ピン色/アイコン識別子  |
-| image_urls         | text[]                |                     | 画像 URL 配列          |
-| created_at         | timestamptz           | default now()       | 作成                   |
-| updated_at         | timestamptz           | default now()       | 更新                   |
+### SHELTERS（避難所 + 最新ステータス + 藤沢市様式対応）
+
+| カラム名                   | 型                    | 制約 / デフォルト値           | 説明                                       |
+| -------------------------- | --------------------- | ----------------------------- | ------------------------------------------ |
+| id                         | uuid                  | PK, default gen_random_uuid() | 避難所 ID                                  |
+| name                       | text                  | NOT NULL, index               | 名称（例：藤沢第一小学校）                 |
+| address                    | text                  |                               | 住所                                       |
+| phone                      | text                  |                               | 電話番号                                   |
+| website_url                | text                  |                               | 公式 URL                                   |
+| type                       | shelter_type          | NOT NULL                      | 区分（同行 / 同伴 ）                       |
+| capacity                   | integer               | default 0                     | 収容人数（想定最大人数）                   |
+| geom                       | geography(Point,4326) | NOT NULL                      | 位置情報（緯度経度）                       |
+| is_emergency_flood         | boolean               | default false                 | 洪水・内水氾濫時の避難対象か               |
+| is_emergency_landslide     | boolean               | default false                 | 土砂災害時の避難対象か                     |
+| is_emergency_tidalwave     | boolean               | default false                 | 津波災害時の避難対象か                     |
+| is_emergency_large_fire    | boolean               | default false                 | 大規模火災時の避難対象か                   |
+| emergency_space_note       | text                  |                               | 特記事項（例：屋外利用・高台）             |
+| has_parking                | boolean               | default false                 | 駐車場あり                                 |
+| has_barrier_free_toilet    | boolean               | default false                 | バリアフリートイレあり                     |
+| has_pet_space              | boolean               | default false                 | ペット受け入れ可（同行・同伴スペースあり） |
+| is_designated_shelter      | boolean               | default false                 | 指定避難所に該当するか                     |
+| is_welfare_shelter_primary | boolean               | default false                 | 福祉避難所（第一次）か                     |
+| notes                      | text                  |                               | 備考欄（その他市独自の補足）               |
+| contact_hq                 | text                  |                               | 管理本部・連絡先（教育委員会等）           |
+| latest_status              | shelter_open_status   |                               | 最新の開設状況（open / closed / unknown）  |
+| latest_congestion          | integer               |                               | 最新混雑度（%）                            |
+| latest_reported_at         | timestamptz           |                               | 最終更新日時（自動記録）                   |
+| pin_icon                   | text                  |                               | ピン色 / アイコン識別子                    |
+| image_urls                 | text[]                |                               | 画像 URL 配列                              |
+| created_at                 | timestamptz           | default now()                 | 作成日時                                   |
+| updated_at                 | timestamptz           | default now()                 | 更新日時                                   |
 
 ---
 
@@ -106,13 +120,14 @@
 
 ### FAMILY_CHECKINS（安否）
 
-| カラム名    | 型          | 制約 / デフォルト値    | 説明                          |
-| ----------- | ----------- | ---------------------- | ----------------------------- |
-| id          | uuid        | PK                     | チェックイン ID               |
-| member_id   | uuid        | FK → family_members.id | 家族 ID                       |
-| status      | text        |                        | 安否状態（safe/need_help 等） |
-| message     | text        |                        | コメント                      |
-| reported_at | timestamptz | default now()          | 報告日時                      |
+| カラム名            | 型          | 制約 / デフォルト値    | 説明                                                                 |
+| ------------------- | ----------- | ---------------------- | -------------------------------------------------------------------- |
+| id                  | uuid        | PK                     | チェックイン ID                                                      |
+| member_id           | uuid        | FK → family_members.id | 家族 ID                                                              |
+| status              | text        |                        | 安否状態（safe/need_help 等）                                        |
+| message             | text        |                        | コメント                                                             |
+| reported_at         | timestamptz | default now()          | 報告日時                                                             |
+| reported_by_user_id | uuid        | FK → users.id, NULL 可 | 安否を記録したユーザーの ID。家族（ゲストリンク）による記録時は NULL |
 
 ---
 
