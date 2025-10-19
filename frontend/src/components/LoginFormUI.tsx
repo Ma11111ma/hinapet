@@ -2,6 +2,8 @@
 "use client";
 
 import React, { FormEvent } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebaseClient";
 
 type Props = {
   email: string;
@@ -9,84 +11,88 @@ type Props = {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  onSignUp?: () => void;
   onGoogleSignIn: () => void;
   loading: boolean;
   error: string | null;
 };
 
-export default function LoginFormUI({
+export const LoginFormUI: React.FC<Props> = ({
   email,
   password,
   onEmailChange,
   onPasswordChange,
   onSubmit,
+  onSignUp,
   onGoogleSignIn,
   loading,
   error,
-}: Props) {
+}) => {
   return (
     <form
       onSubmit={onSubmit}
-      className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md flex flex-col gap-4"
+      className="flex flex-col gap-4 p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto"
     >
-      <h2 className="text-2xl font-bold text-center">ログイン</h2>
-
-      {error && (
-        <div className="text-red-500 text-sm text-center">{error}</div>
-      )}
-
-      {/* Email入力 */}
-      <div className="flex flex-col">
-        <label htmlFor="email" className="mb-1 text-sm font-medium">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
           メールアドレス
         </label>
         <input
           type="email"
-          id="email"
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
           required
         />
       </div>
 
-      {/* Password入力 */}
-      <div className="flex flex-col">
-        <label htmlFor="password" className="mb-1 text-sm font-medium">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
           パスワード
         </label>
         <input
           type="password"
-          id="password"
           value={password}
           onChange={(e) => onPasswordChange(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:border-blue-500 focus:ring focus:ring-blue-200"
           required
         />
       </div>
 
-      {/* Submitボタン */}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+
       <button
         type="submit"
         disabled={loading}
-        className={`w-full py-2 rounded text-white font-semibold ${
-          loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
-        }`}
+        className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
       >
         {loading ? "ログイン中..." : "ログイン"}
       </button>
 
-      {/* Googleログイン */}
+      {onSignUp && (
+        <button
+          type="button"
+          onClick={onSignUp}
+          disabled={loading}
+          className="bg-green-500 text-white py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
+        >
+          {loading ? "登録中..." : "新規登録"}
+        </button>
+      )}
+
       <button
         type="button"
         onClick={onGoogleSignIn}
-        disabled={loading}
-        className={`w-full py-2 rounded text-white font-semibold mt-2 ${
-          loading ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600"
-        }`}
+        className="mt-2 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
       >
-        {loading ? "処理中..." : "Googleでログイン"}
+        Googleでログイン
+      </button>
+      <button
+        onClick={() => signOut(auth)}
+        className="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500"
+      >
+        ログアウト
       </button>
     </form>
   );
-}
+};
