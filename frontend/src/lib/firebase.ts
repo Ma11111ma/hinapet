@@ -1,5 +1,5 @@
 // src/lib/firebase.ts
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -12,7 +12,11 @@ const firebaseConfig = {
 };
 
 // Firebaseアプリを初期化
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
 // 認証インスタンスをエクスポート
 export const auth = getAuth(app);
+export default app;
+
+// デバッグ用（後で削除してOK）
+console.log("✅ Firebase initialized:", firebaseConfig.projectId);
