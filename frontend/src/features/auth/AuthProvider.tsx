@@ -1,16 +1,21 @@
-// frontend/src/features/auth/useAuth.tsx
+// frontend/src/features/auth/AuthProvider.tsx
 "use client";
 
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { auth, googleProvider } from "lib/firebaseClient";
-import { signInWithEmailAndPassword, signInWithPopup, onAuthStateChanged, User } from "firebase/auth";
-import { AuthVerifyResponse } from "../../types/api";
-import { postSession } from "../../lib/apiClient";
+import { auth, googleProvider } from "@/lib/firebaseClient";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  onAuthStateChanged,
+  User,
+} from "firebase/auth";
+import { AuthVerifyResponse } from "@/types/api";
+import { postSession } from "@/lib/apiClient";
 
 // Contextで提供する値の型
 type AuthContextValue = {
   user: AuthVerifyResponse | null;
-  loading: boolean; // ←追加
+  loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -18,12 +23,12 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Provider コンポーネント
+// Providerコンポーネント
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthVerifyResponse | null>(null);
-  const [loading, setLoading] = useState(true); // 初期ロード時は true
+  const [loading, setLoading] = useState(true);
 
-  // Firebase 認証状態変化時の処理
+  // Firebase 認証状態変化を監視
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
       setLoading(true);
@@ -89,8 +94,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 // カスタムフック
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
