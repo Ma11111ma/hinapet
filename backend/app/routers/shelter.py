@@ -9,6 +9,7 @@ from app.core.deps import get_db
 from app.crud.shelter import get_shelters, get_shelter_by_id
 from app.schemas.shelter import ShelterItem, ShelterListResponse
 from app.core.errors import ErrorResponse  # 共通エラー応答
+from app.models.shelter import CrowdLevel, Shelter
 
 router = APIRouter(prefix="/shelters", tags=["shelters"])
 
