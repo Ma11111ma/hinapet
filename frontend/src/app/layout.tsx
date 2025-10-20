@@ -1,5 +1,4 @@
-// frontend/src/app/layout.tsx
-"use client"; // AuthProvider を使うのでクライアントコンポーネントにする
+"use client";
 
 import React from "react";
 import { AuthProvider } from "@/features/auth/AuthProvider";
@@ -10,7 +9,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja">
       <body>
         <AuthProvider>
-          {children} {/* 全ページが AuthProvider のコンテキスト内でレンダリングされる */}
+          {children}
         </AuthProvider>
       </body>
     </html>
