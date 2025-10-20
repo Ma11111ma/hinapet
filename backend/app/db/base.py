@@ -8,3 +8,7 @@ from app.models.user import User            # noqa: F401
 from app.models.shelter import Shelter      # noqa: F401
 from app.models.pet import Pet              # noqa: F401
 from app.models.favorite import Favorite    # noqa: F401
+from app.models.family import FamilyMember, FamilyCheckin  # noqa: F401
+from app.models.checklist import Checklist  # noqa: F401
+from app.models.news import News  # noqa: F401
+from app.models.audit_log import AuditLog  # noqa: F401

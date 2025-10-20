@@ -48,6 +48,18 @@ erDiagram
       shelter_type type
       int capacity
       geography_point geom "geography(Point,4326)"
+      boolean is_emergency_flood
+      boolean is_emergency_landslide
+      boolean is_emergency_tidalwave
+      boolean is_emergency_large_fire
+      text emergency_space_note
+      boolean has_parking
+      boolean has_barrier_free_toilet
+      boolean has_pet_space
+      boolean is_designated_shelter
+      boolean is_welfare_shelter_primary
+      text notes
+      text contact_hq
       shelter_open_status latest_status
       int latest_congestion "0..100"
       timestamptz latest_reported_at
@@ -91,6 +103,7 @@ erDiagram
       text status
       text message
       timestamptz reported_at
+      uuid reported_by_user_id FK "-> USERS.id"
     }
 
     CHECKLISTS {

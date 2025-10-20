@@ -22,6 +22,10 @@ services:
       - ./backend/.env
     volumes:
       - ./backend:/app
+      - ./backend/secrets/firebase-admin-key.json:/app/secrets/firebase-admin-key.json:ro
+    environment:
+      # ✅ FastAPI（Firebase Admin SDK）がこのパスを参照
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/firebase-admin-key.json
     ports:
       - "8000:8000"
     depends_on:

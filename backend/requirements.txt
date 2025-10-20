@@ -8,5 +8,11 @@ psycopg2-binary==2.9.7
 SQLAlchemy==2.0.22
 alembic==1.13.2
 geoalchemy2==0.15.2
-stripe
+stripe==13.0.1
 firebase-admin==7.1.0
+pdfplumber==0.11.7
+camelot-py==1.0.9
+pandas==2.3.3
+requests==2.32.3
+geopy==2.4.1
+email-validator>=2.1.0

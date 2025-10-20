@@ -15,6 +15,7 @@ venv/
 .venv/
 backend/.env
 
+
 # Docker
 *.pid
 *.sock
@@ -23,3 +24,11 @@ backend/.env
 .vscode/
 .idea/
 .DS_Store
+# Geocoding cache & logs
+backend/data/processed/geocode_cache.json
+backend/data/processed/errors.log
+backend/app/firebase-admin-key.json
+
+# firebase json file
+backend/secrets
+
