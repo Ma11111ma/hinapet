@@ -1,6 +1,7 @@
+// frontend/src/app/dashboard/page.tsx
 "use client";
 
-import ProtectedRoute from "@/features/auth/ProtectedRoute";
+import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import DashboardTabs from "./DashboardTabs";
 
 export default function DashboardPage() {

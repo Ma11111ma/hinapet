@@ -1,3 +1,4 @@
+// frontend/src/features/auth/ProtectedRoute.tsx
 "use client";
 
 import { ReactNode, useEffect } from "react";
@@ -8,18 +9,18 @@ interface ProtectedRouteProps {
   children: ReactNode;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, initialized, loading } = useAuth();
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { user, loading, initialized } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (initialized && !user) {
-      router.replace("/auth/login");
+      router.replace("/auth/login"); // 未ログインなら /auth/login
     }
   }, [initialized, user, router]);
 
   if (!initialized || loading) return <p>読み込み中...</p>;
-  if (!user) return null; // 未ログインなら描画しない
+  if (!user) return null;
 
   return <>{children}</>;
-}
+};
