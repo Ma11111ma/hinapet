@@ -1,15 +1,15 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, getIdToken } from "@/lib/firebaseClient";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "@/lib/firebaseClient";
+import { onAuthStateChanged, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  initialized: boolean; // 追加
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  initialized: boolean;
+  signInWithEmail: (email: string, password: string) => Promise<{ user: User }>;
+  signInWithGoogle: () => Promise<{ user: User }>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -20,29 +20,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
-      setInitialized(true); // 初期化完了
+      setInitialized(true);
     });
     return () => unsubscribe();
   }, []);
+
+  const signInWithEmail = async (email: string, password: string) => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    setUser(result.user);
+    return { user: result.user };
+  };
+
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    setUser(result.user);
+    return { user: result.user };
+  };
 
   const value: AuthContextType = {
     user,
     loading,
     initialized,
-    signInWithEmail: async (email, password) => {
-      // Firebase ログイン処理
-    },
-    signInWithGoogle: async () => {
-      // Firebase Google ログイン処理
-    },
+    signInWithEmail,
+    signInWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// ✅ ここで必ずエクスポート
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within an AuthProvider");
