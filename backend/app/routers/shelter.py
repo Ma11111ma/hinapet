@@ -1,14 +1,18 @@
 from __future__ import annotations
+
 from typing import Literal, Optional
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+
 from app.core.deps import get_db
 from app.crud.shelter import get_shelters, get_shelter_by_id
 from app.schemas.shelter import ShelterItem, ShelterListResponse
-from app.core.errors import ErrorResponse  # ✅ ErrorResponse 型を参照
+from app.core.errors import ErrorResponse  # 共通エラー応答
 from app.models.shelter import CrowdLevel, Shelter
 
 router = APIRouter(prefix="/shelters", tags=["shelters"])
+
 
 @router.get(
     "",
@@ -22,6 +26,9 @@ router = APIRouter(prefix="/shelters", tags=["shelters"])
 def list_shelters(
     db: Session = Depends(get_db),
     type: Optional[Literal["companion", "accompany"]] = Query(None, description="避難種別"),
+    crowd_level: Optional[Literal["low", "medium", "high"]] = Query(
+        None, description="混雑度（未確定なら Optional[str] に変更可）"
+    ),
     lat: float | None = Query(None, ge=-90, le=90),
     lng: float | None = Query(None, ge=-180, le=180),
     radius: float = Query(5.0, ge=0, le=50),
@@ -33,6 +40,7 @@ def list_shelters(
     items = get_shelters(
         db=db,
         type=type,
+        crowd_level=crowd_level,
         lat=lat,
         lng=lng,
         radius_km=radius,
@@ -48,7 +56,7 @@ def list_shelters(
     response_model=ShelterItem,
     summary="避難所詳細を取得",
     responses={
-        404: {"description": "Shelter not found", "model": ErrorResponse},  # ✅ modelを明示
+        404: {"description": "Shelter not found", "model": ErrorResponse},
         422: {"description": "Validation error", "model": ErrorResponse},
         500: {"description": "Internal server error", "model": ErrorResponse},
     },
@@ -60,7 +68,6 @@ def shelter_detail(shelter_id: str, db: Session = Depends(get_db)) -> ShelterIte
     """
     item = get_shelter_by_id(db, shelter_id)
     if not item:
-        # ✅ JSONResponse ではなく HTTPException で統一
         raise HTTPException(status_code=404, detail="Shelter not found")
     return item
 

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 # ルーター
-from app.routers import shelter, users, favorites, premium, auth  # ← premium を追加！
+from app.routers import shelter, users, favorites, premium, pets, family, checklists, news, auth  # ← premium を追加！
 
 # 共通エラーハンドラ
 from app.core.errors import register_exception_handlers
@@ -47,7 +47,11 @@ register_exception_handlers(app)
 app.include_router(shelter.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
-app.include_router(premium.router)  # ← 追加
+app.include_router(premium.router)  
+app.include_router(pets.router)
+app.include_router(family.router)
+app.include_router(checklists.router)
+app.include_router(news.router)
 app.include_router(auth.router)
 
 # (5) ヘルスチェック
