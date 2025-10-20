@@ -14,6 +14,7 @@ class ShelterItem(BaseModel):
     address: Optional[str] = None
     type: str
     capacity: int
+    crowd_level: Optional[str] = None
     lat: float
     lng: float
     crowd_level: Optional[CrowdLevel] = CrowdLevel.empty

@@ -46,9 +46,12 @@ class Shelter(Base):
     # 最新ステータス
     latest_status = Column(Text)
     latest_congestion = Column(Integer)
-    latest_reported_at = Column(String)  # ※timestamptzも可。今回は簡易に Text/ISO で運用可
+    latest_reported_at = Column(String)  # timestamptz でも可
     pin_icon = Column(Text)
     image_urls = Column(ARRAY(Text))
 
     created_at = Column(String, server_default=text("now()"))
     updated_at = Column(String, server_default=text("now()"))
+
+    # ✅ ここを追加
+    crowd_level = Column(Text, nullable=True)
