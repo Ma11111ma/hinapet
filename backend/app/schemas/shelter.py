@@ -1,9 +1,12 @@
 from __future__ import annotations
-
 from typing import List, Optional
-
 from pydantic import BaseModel, ConfigDict
+from enum import Enum
 
+class CrowdLevel(str, Enum):
+    empty = "empty"
+    few = "few"
+    full = "full"
 
 class ShelterItem(BaseModel):
     id: str
@@ -14,6 +17,7 @@ class ShelterItem(BaseModel):
     crowd_level: Optional[str] = None
     lat: float
     lng: float
+    crowd_level: Optional[CrowdLevel] = CrowdLevel.empty
 
     # Pydantic v2: 旧 orm_mode → from_attributes
     model_config = ConfigDict(from_attributes=True)
@@ -21,3 +25,5 @@ class ShelterItem(BaseModel):
 
 class ShelterListResponse(BaseModel):
     items: List[ShelterItem]
+
+

@@ -18,6 +18,12 @@ export default function ShelterModal({
   distance,
   duration,
 }: Props) {
+  const crowdLabelMap: Record<string, string> = {
+    empty: "空きあり",
+    few: "残りわずか",
+    full: "満員",
+  };
+
   //ESCキーでモーダル閉じる
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
@@ -58,6 +64,12 @@ export default function ShelterModal({
           <div className="mt-3 bg-gray-100 p-2 rounded">
             <p className="text-sm">距離：{distance}</p>
             <p className="text-sm">所要時間：約 {duration}</p>
+            <p className="text-sm">
+              混雑度：
+              {shelter.crowd_level === "empty" && "空きあり"}
+              {shelter.crowd_level === "few" && "残りわずか"}
+              {shelter.crowd_level === "full" && "満員"}
+            </p>
           </div>
         )}
 
