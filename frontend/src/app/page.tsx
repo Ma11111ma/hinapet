@@ -10,7 +10,8 @@ export default function Page() {
       <section style={{ marginTop: 24 }}>
         <h2>プレミアム機能</h2>
         <p>プレミアムに登録すると追加機能が利用できます。</p>
-        <PremiumButton />
+        {/* 未ログインなら /login に誘導 */}
+        <PremiumButton onUnauthedNavigateTo="/login" />
       </section>
     </main>
   );

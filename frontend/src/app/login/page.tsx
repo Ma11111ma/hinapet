@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/useAuth";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebaseClient";
 import { postSession } from "@/lib/apiClient";
+import Link from "next/link";
 
 export default function LoginPage() {
   const {
@@ -26,7 +27,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
-      // router.replace("/"); // または `/dashboard` に変更してもOK
+       router.replace("/"); // ログイン済みならトップへ
     }
   }, [authLoading, user, router]);
 
@@ -91,7 +92,7 @@ export default function LoginPage() {
 
   // ✅ UI表示
   return (
-    <main className="flex justify-center items-center min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <LoginFormUI
         email={email}
         password={password}
@@ -103,6 +104,14 @@ export default function LoginPage() {
         loading={loading || authLoading}
         error={error}
       />
+       {/* 中央寄せ・小さめ・ホバーで下線 */}
+      <Link
+        href="/"
+        className="mt-6 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 hover:underline"
+      >
+        <span aria-hidden>←</span>
+        <span className="ml-1">ホームへ戻る</span>
+      </Link>
     </main>
   );
 }
