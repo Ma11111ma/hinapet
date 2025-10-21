@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LoginFormUI } from "@/components/LoginFormUI";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -10,7 +10,7 @@ import Link from "next/link";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export default function LoginPage() {
-  const { signInWithEmail } = useAuth();
+  const { signInWithEmail, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -18,12 +18,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-u/17-CheckoutButton
   // ✅ ログイン済みならトップまたはダッシュボードへ遷移
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading) return; // 認証状態取得中はスキップ
     if (user) {
-       router.replace("/"); // ログイン済みならトップへ
+      router.replace("/"); // すでにログイン済みならトップへ
     }
   }, [authLoading, user, router]);
 
@@ -61,7 +60,9 @@ u/17-CheckoutButton
       }
     } catch (err: unknown) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Googleログインに失敗しました");
+      setError(
+        err instanceof Error ? err.message : "Googleログインに失敗しました"
+      );
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ u/17-CheckoutButton
         loading={loading}
         error={error}
       />
-       {/* 中央寄せ・小さめ・ホバーで下線 */}
+      {/* 中央寄せ・小さめ・ホバーで下線 */}
       <Link
         href="/"
         className="mt-6 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 hover:underline"
