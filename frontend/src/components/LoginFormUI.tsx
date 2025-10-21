@@ -1,8 +1,14 @@
 "use client";
 
 import React, { FormEvent, useEffect, useState } from "react";
-import { signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "@/lib/firebaseClient";
+import { RegisterButton } from "./RegisterButton";
+import Link from "next/link";
 
 type Props = {
   email: string;
@@ -27,8 +33,6 @@ export const LoginFormUI: React.FC<Props> = ({
 }) => {
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
-  const [registering, setRegistering] = useState(false);
-  const [registerError, setRegisterError] = useState<string | null>(null);
 
   // Firebaseログイン状態確認
   useEffect(() => {
@@ -38,20 +42,6 @@ export const LoginFormUI: React.FC<Props> = ({
     });
     return () => unsubscribe();
   }, []);
-
-  // 新規登録
-  const handleRegister = async () => {
-    setRegisterError(null);
-    setRegistering(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("✅ 新規登録成功:", userCredential.user.email);
-    } catch (err: unknown) {
-      setRegisterError(err instanceof Error ? err.message : "登録に失敗しました");
-    } finally {
-      setRegistering(false);
-    }
-  };
 
   if (checking) {
     return (
@@ -110,7 +100,6 @@ export const LoginFormUI: React.FC<Props> = ({
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
-      {registerError && <p className="text-red-500 text-sm">{registerError}</p>}
 
       <button
         type="submit"
@@ -128,14 +117,17 @@ export const LoginFormUI: React.FC<Props> = ({
         Googleでログイン
       </button>
 
-      <button
-        type="button"
-        onClick={handleRegister}
-        disabled={registering}
-        className="mt-2 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
-      >
-        {registering ? "登録中..." : "新規登録"}
-      </button>
+      {/* ✅ 共通化した新規登録ボタン */}
+      <RegisterButton email={email} password={password} />
+      {/* ✅ 新規登録リンク */}
+      <div className="text-center mt-4">
+        <Link
+          href="/register"
+          className="text-blue-600 underline text-sm hover:text-blue-800"
+        >
+          新規登録はこちら
+        </Link>
+      </div>
     </form>
   );
 };

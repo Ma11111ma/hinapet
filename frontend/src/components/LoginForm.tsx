@@ -22,7 +22,11 @@ const LoginForm: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const idToken = await userCredential.user.getIdToken();
       await postSession(idToken);
       console.log("✅ ログイン成功");

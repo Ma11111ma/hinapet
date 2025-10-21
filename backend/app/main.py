@@ -1,7 +1,7 @@
+from __future__ import annotations #構文ルールで_future_はファイルの最初の文でなければダメ
 from dotenv import load_dotenv
 load_dotenv()  # .env の内容を環境変数として読み込む
 
-from __future__ import annotations
 
 import os
 from fastapi import FastAPI
