@@ -1,8 +1,8 @@
 // frontend/src/components/LoginFormUI.tsx
 "use client";
 
-import React, { FormEvent } from "react";
-import { signOut } from "firebase/auth";
+import React, { FormEvent, useEffect, useState } from "react";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebaseClient";
 
 type Props = {
@@ -28,6 +28,48 @@ export const LoginFormUI: React.FC<Props> = ({
   loading,
   error,
 }) => {
+  // ✅ ログイン済みユーザーを保持
+  const [currentEmail, setCurrentEmail] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true); // ← 初期チェック中フラグ
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email) {
+        setCurrentEmail(user.email);
+      } else {
+        setCurrentEmail(null);
+      }
+      setChecking(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // ✅ Firebaseの状態初期化中（ちらつき防止）
+  if (checking) {
+    return (
+      <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto text-center">
+        <p className="text-gray-500">状態を確認中...</p>
+      </div>
+    );
+  }
+  // ログイン済みUI
+  if (currentEmail) {
+    return (
+      <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto text-center">
+        <h2 className="text-lg font-bold mb-4 text-gray-800">
+          ログイン中のユーザー
+        </h2>
+        <p className="text-gray-700 mb-6">{currentEmail}</p>
+        <button
+          onClick={() => signOut(auth)}
+          className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition"
+        >
+          ログアウト
+        </button>
+      </div>
+    );
+  }
   return (
     <form
       onSubmit={onSubmit}

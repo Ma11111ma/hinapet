@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import React from "react";
 import type { Shelter } from "../types/shelter";
+import { FavoriteButton } from "./FavoriteButton";
 
 type Props = {
   shelter: Shelter;
@@ -53,7 +54,17 @@ export default function ShelterModal({
         className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-sl font-bold mb-4">{shelter.name}</h2>
+        {/* タイトルとお気に入りボタン */}
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-lg font-bold">{shelter.name}</h2>
+          <FavoriteButton
+            shelterId={shelter.id}
+            className="ml-2 hover:scale-105 transition-transform"
+            ariaLabelAdd="お気に入り登録"
+            ariaLabelRemove="お気に入り解除"
+          />
+        </div>
+
         <p className="text-gray-700 mb-2">住所：{shelter.address}</p>
         <p className="text-gray-700 mb-2">
           避難区分：{shelter.type === "accompany" ? "同行避難" : "同伴避難"}

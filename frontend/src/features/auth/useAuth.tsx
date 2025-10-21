@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { AuthVerifyResponse } from "@/types/api";
 import { postSession } from "@/lib/apiClient";
+import { useRouter } from "next/navigation";
 
 // Contextで提供する値の型
 type AuthContextValue = {
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const router = useRouter();
   const [user, setUser] = useState<AuthVerifyResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => unsubscribe();
   }, []);
 
-  // メール/パスワードログイン
+  // メール/パスワードログイン→成功したらトップページへ
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -66,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const idToken = await credential.user.getIdToken();
       const userData: AuthVerifyResponse = await postSession(idToken);
       setUser(userData);
+      router.push("/"); // ログイン後トップへ遷移（ここを("/mypage"とすればマイページへ遷移させられる)
     } catch (err) {
       console.error("🔥 signInWithEmail error:", err);
       throw err;
@@ -82,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const idToken = await result.user.getIdToken();
       const userData: AuthVerifyResponse = await postSession(idToken);
       setUser(userData);
+      router.push("/"); // ログイン後トップへ遷移（ここを("/mypage"とすればマイページへ遷移させられる)
     } catch (err) {
       console.error("🔥 signInWithGoogle error:", err);
       throw err;
@@ -96,6 +100,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await auth.signOut();
       setUser(null);
+      router.push("/login"); //サインアウト後はログインへ
+      router.refresh();
     } catch (err) {
       console.error("🔥 signOut error:", err);
     } finally {

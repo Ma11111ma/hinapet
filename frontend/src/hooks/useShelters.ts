@@ -36,6 +36,7 @@ export const useShelters = () => {
         console.log("shelters/APIレスポンスOK", data);
 
         if (Array.isArray(data.items)) {
+          console.log("data.items sample:", data.items?.[0]);
           setShelters(data.items);
         } else if (Array.isArray(data)) {
           setShelters(data);
