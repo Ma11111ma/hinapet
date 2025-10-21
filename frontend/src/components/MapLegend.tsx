@@ -1,30 +1,19 @@
 "use client";
 
 export default function MapLegend() {
-  const legendStyle = {
-    position: "absolute" as const,
-    bottom: "20px",
-    left: "20px",
-    background: "white",
-    padding: "10px",
-    borderRadius: "8px",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-    fontSize: "14px",
-  };
-
   const items = [
-    { color: "🔵", label: "同行避難（accompany）" },
-    { color: "🟢", label: "同伴避難（companion）" },
+    { color: "bg-blue-500", label: "同行避難（accompany）" },
+    { color: "bg-green-500", label: "同伴避難（companion）" },
   ];
 
   return (
-    <div style={legendStyle}>
-      <strong>凡例</strong>
-      <ul style={{ listStyle: "none", padding: 0, margin: "6px 0 0 0" }}>
+    <div className="absolute bottom-4 left-4 bg-white/90 rounded-lg p-3 shadow-md text-sm">
+      <strong className="block mb-1">避難種別</strong>
+      <ul className="space-y-1">
         {items.map((item) => (
-          <li key={item.label}>
-            {item.color}
-            {item.label}
+          <li key={item.label} className="flex items-center gap-2">
+            <span className={`w-3 h-3 rounded-full ${item.color}`} />
+            <span>{item.label}</span>
           </li>
         ))}
       </ul>
