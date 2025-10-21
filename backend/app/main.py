@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # .env の内容を環境変数として読み込む
+
 from __future__ import annotations
 
 import os

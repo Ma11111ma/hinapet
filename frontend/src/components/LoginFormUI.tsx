@@ -1,7 +1,7 @@
 "use client";
 
 import React, { FormEvent, useEffect, useState } from "react";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+import { signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebaseClient";
 
 type Props = {
@@ -25,24 +25,34 @@ export const LoginFormUI: React.FC<Props> = ({
   loading,
   error,
 }) => {
-  // ✅ ログイン済みユーザーを保持
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
-  const [checking, setChecking] = useState(true); // ← 初期チェック中フラグ
+  const [checking, setChecking] = useState(true);
+  const [registering, setRegistering] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
+  // Firebaseログイン状態確認
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email) {
-        setCurrentEmail(user.email);
-      } else {
-        setCurrentEmail(null);
-      }
+      setCurrentEmail(user?.email ?? null);
       setChecking(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // ✅ Firebaseの状態初期化中（ちらつき防止）
+  // 新規登録
+  const handleRegister = async () => {
+    setRegisterError(null);
+    setRegistering(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("✅ 新規登録成功:", userCredential.user.email);
+    } catch (err: unknown) {
+      setRegisterError(err instanceof Error ? err.message : "登録に失敗しました");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
   if (checking) {
     return (
       <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto text-center">
@@ -50,7 +60,7 @@ export const LoginFormUI: React.FC<Props> = ({
       </div>
     );
   }
-  // ログイン済みUI
+
   if (currentEmail) {
     return (
       <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto text-center">
@@ -67,6 +77,7 @@ export const LoginFormUI: React.FC<Props> = ({
       </div>
     );
   }
+
   return (
     <form
       onSubmit={onSubmit}
@@ -99,6 +110,7 @@ export const LoginFormUI: React.FC<Props> = ({
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
+      {registerError && <p className="text-red-500 text-sm">{registerError}</p>}
 
       <button
         type="submit"
@@ -114,6 +126,15 @@ export const LoginFormUI: React.FC<Props> = ({
         className="mt-2 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
       >
         Googleでログイン
+      </button>
+
+      <button
+        type="button"
+        onClick={handleRegister}
+        disabled={registering}
+        className="mt-2 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
+      >
+        {registering ? "登録中..." : "新規登録"}
       </button>
     </form>
   );
