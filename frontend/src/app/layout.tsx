@@ -1,10 +1,10 @@
-
 //import { Inter } from "next/font/google";
 //import { Providers } from "./providers";
 import React from "react";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import "./globals.css";
+import Providers from "./providers";
 
 export default function RootLayout({
   children,
@@ -14,8 +14,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <AuthProvider>
-          
+        <Providers>
           {children}
 
           {/* ✅ トースト通知コンテナをアプリ全体に配置 */}
@@ -26,10 +25,8 @@ export default function RootLayout({
               style: { fontSize: "0.9rem" },
             }}
           />
-        
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
 }
-

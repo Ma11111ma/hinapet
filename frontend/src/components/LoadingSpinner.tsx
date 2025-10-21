@@ -1,3 +1,4 @@
+"use client";
 //frontend/src/components/LoadingSpinner.tsx
 export const LoadingSpinner = () => (
   <div className="flex justify-center items-center h-full">

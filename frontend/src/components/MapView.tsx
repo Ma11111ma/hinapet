@@ -14,6 +14,8 @@ import ShelterModal from "./ShelterModal";
 import SearchBar from "./SearchBar";
 import ShelterTypeFilter from "./ShelterTypeFilter";
 import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { getShelterPinSymbol } from "./ShelterPin";
 
 //===GoogleMapsGeocoding API===
 const geocodeCurrentPosition = async (lat: number, lng: number) => {
@@ -75,6 +77,7 @@ export default function MapView() {
   } = useDistanceMatrix();
 
   const [isLocating, setIsLocating] = useState(false);
+
   const handleTypeSelect = (t: ShelterType | null) => {
     setSelectedType(selectedType === t ? null : t);
   };
@@ -156,6 +159,11 @@ export default function MapView() {
     origin: google.maps.LatLngLiteral,
     destination: google.maps.LatLngLiteral
   ) => {
+    if (typeof google === "undefined" || !google.maps) {
+      console.warn("Google Maps SDK not loaded yet");
+      return;
+    }
+
     const service = new google.maps.DirectionsService();
 
     service.route(
@@ -174,21 +182,22 @@ export default function MapView() {
     );
   };
 
-  // ==ピンの色設定==
-  const getMarkerColor = (type: ShelterType) => {
-    switch (type) {
-      case "accompany":
-        return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"; // 同行
-      case "companion":
-        return "http://maps.google.com/mapfiles/ms/icons/green-dot.png"; // 同伴
-      default:
-        return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"; // 不明
-    }
-  };
+  // // ==ピンの色設定==
+  // const getMarkerColor = (type: ShelterType) => {
+  //   switch (type) {
+  //     case "accompany":
+  //       return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"; // 同行
+  //     case "companion":
+  //       return "http://maps.google.com/mapfiles/ms/icons/green-dot.png"; // 同伴
+  //     default:
+  //       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"; // 不明
+  //   }
+  // };
 
   //==ルート描画==
   return (
     <div className="relative">
+      {(isLocating || distLoading) && <LoadingSpinner />}
       {geoError && (
         <div className="absolute top-24 left-4 bg-red-100 text-red-700 p-2 rounded shadow">
           {geoError}
@@ -252,7 +261,7 @@ export default function MapView() {
                 key={shelter.id}
                 position={{ lat: shelter.lat, lng: shelter.lng }}
                 title={shelter.name}
-                icon={getMarkerColor(shelter.type)}
+                icon={getShelterPinSymbol(shelter.type)}
                 onClick={() => {
                   setSelectedShelter(shelter);
                   if (currentPosition) {
@@ -267,21 +276,21 @@ export default function MapView() {
 
             {directions && <DirectionsRenderer directions={directions} />}
             <MapLegend />
-
-            {/*==モーダル==*/}
-            {selectedShelter && (
-              <ShelterModal
-                shelter={selectedShelter}
-                onClose={() => setSelectedShelter(null)}
-                onRoute={(dest) => {
-                  if (currentPosition) calculateRoute(currentPosition, dest);
-                }}
-                distance={distances[String(selectedShelter.id)]?.text ?? "-"}
-                duration={durations[String(selectedShelter.id)]?.text ?? "-"}
-              />
-            )}
           </GoogleMap>
         </LoadScript>
+      )}
+
+      {/*==モーダル==*/}
+      {selectedShelter && (
+        <ShelterModal
+          shelter={selectedShelter}
+          onClose={() => setSelectedShelter(null)}
+          onRoute={(dest) => {
+            if (currentPosition) calculateRoute(currentPosition, dest);
+          }}
+          distance={distances[String(selectedShelter.id)]?.text ?? "-"}
+          duration={durations[String(selectedShelter.id)]?.text ?? "-"}
+        />
       )}
     </div>
   );
