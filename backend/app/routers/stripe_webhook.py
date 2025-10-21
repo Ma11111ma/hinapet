@@ -13,6 +13,7 @@ from app.core.deps import get_db   # ← 依存関数がここにあります
 from sqlalchemy.orm import Session
 from app.models.user import User   # ユーザーモデル
 # 必要に応じて: from app.db.session import SessionLocal でもOK
+from datetime import datetime, timezone
 
 router = APIRouter(prefix="/premium", tags=["premium"])
 
@@ -38,7 +39,7 @@ def _update_premium_true(
 
     q = db.query(User)
     if user_uid:
-        q = q.filter(User.uid == user_uid)
+        q = q.filter(User.firebase_uid == user_uid)
     elif stripe_customer_id:
         q = q.filter(User.stripe_customer_id == stripe_customer_id)
 
@@ -49,25 +50,38 @@ def _update_premium_true(
     if stripe_customer_id:
         user.stripe_customer_id = stripe_customer_id
     if subscription_id:
-        user.stripe_subscription_id = subscription_id  # モデルにあれば
+        user.stripe_sub_id = subscription_id  # モデル名に合わせる（列は stripe_sub_id）
     if premium_until_unix:
-        user.premium_until = time.strftime(
-            "%Y-%m-%d %H:%M:%S", time.gmtime(premium_until_unix)
-        )
-    user.is_premium = True
+        user.premium_until = datetime.fromtimestamp(premium_until_unix, tz=timezone.utc)   # 変更後（UTCのdatetimeで保存）
+
+     # 状態アップデート（どちらか存在する方を更新）
+    if hasattr(user, "plan"):
+        user.plan = "premium"
+    if hasattr(user, "is_premium"):
+        user.is_premium = True    
+
     db.add(user)
     db.commit()
-
-
+     # 変更後（整理：期限・サブスクIDもクリアしておくと運用が楽）
 def _update_premium_false(db: Session, *, stripe_customer_id: Optional[str]) -> None:
     if not stripe_customer_id:
         return
     user = db.query(User).filter(User.stripe_customer_id == stripe_customer_id).first()
     if not user:
         return
-    user.is_premium = False
+
+    if hasattr(user, "plan"):
+        user.plan = "free"
+    if hasattr(user, "is_premium"):
+        user.is_premium = False
+    if hasattr(user, "premium_until"):
+        user.premium_until = None
+    if hasattr(user, "stripe_sub_id"):
+        user.stripe_sub_id = None
+
     db.add(user)
     db.commit()
+
 
 
 @router.post(
@@ -109,7 +123,7 @@ async def webhook(
             # → 課金完了時：is_premium=true / premium_until を更新
             #   user_id は metadata.user_id に入れている想定（D-1でセット）
             metadata = data.get("metadata") or {}
-            user_uid: Optional[str] = metadata.get("user_id")
+            user_uid: Optional[str] = metadata.get("user_id") or data.get("client_reference_id")
             stripe_customer_id: Optional[str] = data.get("customer")
             subscription_id: Optional[str] = data.get("subscription")
 
@@ -130,7 +144,14 @@ async def webhook(
         elif etype in ("customer.subscription.updated", "invoice.payment_succeeded"):
             # → 期間延長や請求成功時：premium_until を最新に同期
             stripe_customer_id: Optional[str] = data.get("customer")
-            subscription_id: Optional[str] = data.get("id") or data.get("subscription")
+
+            if etype == "customer.subscription.updated":
+               subscription_id: Optional[str] = data.get("id")
+            elif etype == "invoice.payment_succeeded":
+               subscription_id = data.get("subscription")
+            else:
+               subscription_id = None
+
             premium_until_unix: Optional[int] = None
 
             if subscription_id:
