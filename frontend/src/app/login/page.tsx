@@ -1,20 +1,30 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LoginFormUI } from "@/components/LoginFormUI";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { auth } from "@/lib/firebaseClient";
+import { postSession } from "@/lib/apiClient";
+import Link from "next/link";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export default function LoginPage() {
-  const { signInWithEmail } = useAuth();
+  const { signInWithEmail, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ ログイン済みならトップまたはダッシュボードへ遷移
+  useEffect(() => {
+    if (authLoading) return; // 認証状態取得中はスキップ
+    if (user) {
+      router.replace("/"); // すでにログイン済みならトップへ
+    }
+  }, [authLoading, user, router]);
 
   // メール + パスワードログイン
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -50,14 +60,16 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Googleログインに失敗しました");
+      setError(
+        err instanceof Error ? err.message : "Googleログインに失敗しました"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="flex justify-center items-center min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <LoginFormUI
         email={email}
         password={password}
@@ -68,6 +80,14 @@ export default function LoginPage() {
         loading={loading}
         error={error}
       />
+      {/* 中央寄せ・小さめ・ホバーで下線 */}
+      <Link
+        href="/"
+        className="mt-6 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 hover:underline"
+      >
+        <span aria-hidden>←</span>
+        <span className="ml-1">ホームへ戻る</span>
+      </Link>
     </main>
   );
 }
