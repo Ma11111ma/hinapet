@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+
+# ① .env をロード（先頭付近に追加）
+
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 # ルーター
-from app.routers import shelter, users, favorites, premium, pets, family, checklists, news, auth  # ← premium を追加！
+
+
+from app.routers import shelter, users, favorites, premium, pets, family, checklists, news, auth,stripe_webhook # ← premium を追加！
+
 
 # 共通エラーハンドラ
 from app.core.errors import register_exception_handlers
@@ -32,13 +38,14 @@ app.add_middleware(RequestIDMiddleware)
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url],
+    allow_origins=[frontend_url,"http://127.0.0.1:3000"],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
     max_age=86400,
 )
+
 
 # (3) 例外ハンドラ
 register_exception_handlers(app)
@@ -47,14 +54,18 @@ register_exception_handlers(app)
 app.include_router(shelter.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
+
+
 app.include_router(premium.router)  
 app.include_router(pets.router)
 app.include_router(family.router)
 app.include_router(checklists.router)
 app.include_router(news.router)
 app.include_router(auth.router)
+app.include_router(stripe_webhook.router)
 
 # (5) ヘルスチェック
 @app.get("/system/health", tags=["admin"], summary="ヘルスチェック")
+
 def health():
     return {"status": "ok"}
