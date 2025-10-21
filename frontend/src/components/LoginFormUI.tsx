@@ -1,9 +1,6 @@
-// frontend/src/components/LoginFormUI.tsx
 "use client";
 
 import React, { FormEvent } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebaseClient";
 
 type Props = {
   email: string;
@@ -11,7 +8,6 @@ type Props = {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-  onSignUp?: () => void;
   onGoogleSignIn: () => void;
   loading: boolean;
   error: string | null;
@@ -23,7 +19,6 @@ export const LoginFormUI: React.FC<Props> = ({
   onEmailChange,
   onPasswordChange,
   onSubmit,
-  onSignUp,
   onGoogleSignIn,
   loading,
   error,
@@ -69,29 +64,12 @@ export const LoginFormUI: React.FC<Props> = ({
         {loading ? "ログイン中..." : "ログイン"}
       </button>
 
-      {onSignUp && (
-        <button
-          type="button"
-          onClick={onSignUp}
-          disabled={loading}
-          className="bg-green-500 text-white py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
-        >
-          {loading ? "登録中..." : "新規登録"}
-        </button>
-      )}
-
       <button
         type="button"
         onClick={onGoogleSignIn}
         className="mt-2 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
       >
         Googleでログイン
-      </button>
-      <button
-        onClick={() => signOut(auth)}
-        className="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500"
-      >
-        ログアウト
       </button>
     </form>
   );
