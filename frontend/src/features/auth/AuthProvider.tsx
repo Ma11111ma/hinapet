@@ -1,96 +1,60 @@
-// frontend/src/features/auth/useAuth.tsx
 "use client";
 
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { auth, googleProvider } from "lib/firebaseClient";
-import { signInWithEmailAndPassword, signInWithPopup, onAuthStateChanged, User } from "firebase/auth";
-import { AuthVerifyResponse } from "../../types/api";
-import { postSession } from "../../lib/apiClient";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { auth } from "@/lib/firebaseClient";
+import { onAuthStateChanged, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
 
-// Contextで提供する値の型
-type AuthContextValue = {
-  user: AuthVerifyResponse | null;
-  loading: boolean; // ←追加
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  signOut: () => Promise<void>;
-};
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  initialized: boolean;
+  signInWithEmail: (email: string, password: string) => Promise<{ user: User }>;
+  signInWithGoogle: () => Promise<{ user: User }>;
+}
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
-// Provider コンポーネント
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthVerifyResponse | null>(null);
-  const [loading, setLoading] = useState(true); // 初期ロード時は true
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
-  // Firebase 認証状態変化時の処理
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      setLoading(true);
-      try {
-        if (firebaseUser) {
-          const idToken = await firebaseUser.getIdToken();
-          const userData: AuthVerifyResponse = await postSession(idToken);
-          setUser(userData);
-        } else {
-          setUser(null);
-        }
-      } finally {
-        setLoading(false);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+      setInitialized(true);
     });
     return () => unsubscribe();
   }, []);
 
-  // メール/パスワードログイン
   const signInWithEmail = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const idToken = await credential.user.getIdToken();
-      const userData: AuthVerifyResponse = await postSession(idToken);
-      setUser(userData);
-    } finally {
-      setLoading(false);
-    }
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    setUser(result.user);
+    return { user: result.user };
   };
 
-  // Googleログイン
   const signInWithGoogle = async () => {
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      const userData: AuthVerifyResponse = await postSession(idToken);
-      setUser(userData);
-    } finally {
-      setLoading(false);
-    }
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    setUser(result.user);
+    return { user: result.user };
   };
 
-  // ログアウト
-  const signOutUser = async () => {
-    setLoading(true);
-    try {
-      await auth.signOut();
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  const value: AuthContextType = {
+    user,
+    loading,
+    initialized,
+    signInWithEmail,
+    signInWithGoogle,
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, signInWithEmail, signInWithGoogle, signOut: signOutUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// カスタムフック
+// ✅ useAuth をここで一緒にエクスポート
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

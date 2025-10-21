@@ -1,9 +1,14 @@
-// frontend/src/components/LoginFormUI.tsx
 "use client";
 
 import React, { FormEvent, useEffect, useState } from "react";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "@/lib/firebaseClient";
+import { RegisterButton } from "./RegisterButton";
+import Link from "next/link";
 
 type Props = {
   email: string;
@@ -11,7 +16,6 @@ type Props = {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
-  onSignUp?: () => void;
   onGoogleSignIn: () => void;
   loading: boolean;
   error: string | null;
@@ -23,29 +27,22 @@ export const LoginFormUI: React.FC<Props> = ({
   onEmailChange,
   onPasswordChange,
   onSubmit,
-  onSignUp,
   onGoogleSignIn,
   loading,
   error,
 }) => {
-  // ✅ ログイン済みユーザーを保持
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
-  const [checking, setChecking] = useState(true); // ← 初期チェック中フラグ
+  const [checking, setChecking] = useState(true);
 
+  // Firebaseログイン状態確認
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email) {
-        setCurrentEmail(user.email);
-      } else {
-        setCurrentEmail(null);
-      }
+      setCurrentEmail(user?.email ?? null);
       setChecking(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // ✅ Firebaseの状態初期化中（ちらつき防止）
   if (checking) {
     return (
       <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto text-center">
@@ -53,7 +50,7 @@ export const LoginFormUI: React.FC<Props> = ({
       </div>
     );
   }
-  // ログイン済みUI
+
   if (currentEmail) {
     return (
       <div className="p-6 bg-white rounded-xl shadow-md w-full max-w-md mx-auto text-center">
@@ -70,6 +67,7 @@ export const LoginFormUI: React.FC<Props> = ({
       </div>
     );
   }
+
   return (
     <form
       onSubmit={onSubmit}
@@ -111,17 +109,6 @@ export const LoginFormUI: React.FC<Props> = ({
         {loading ? "ログイン中..." : "ログイン"}
       </button>
 
-      {onSignUp && (
-        <button
-          type="button"
-          onClick={onSignUp}
-          disabled={loading}
-          className="bg-green-500 text-white py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
-        >
-          {loading ? "登録中..." : "新規登録"}
-        </button>
-      )}
-
       <button
         type="button"
         onClick={onGoogleSignIn}
@@ -129,12 +116,18 @@ export const LoginFormUI: React.FC<Props> = ({
       >
         Googleでログイン
       </button>
-      <button
-        onClick={() => signOut(auth)}
-        className="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500"
-      >
-        ログアウト
-      </button>
+
+      {/* ✅ 共通化した新規登録ボタン */}
+      <RegisterButton email={email} password={password} />
+      {/* ✅ 新規登録リンク */}
+      <div className="text-center mt-4">
+        <Link
+          href="/register"
+          className="text-blue-600 underline text-sm hover:text-blue-800"
+        >
+          新規登録はこちら
+        </Link>
+      </div>
     </form>
   );
 };
