@@ -85,6 +85,12 @@ def put_favorite(
     db: Session = Depends(get_db),
     current_user: Any = Depends(get_current_user),
 ):
+    print("✅ PUT /favorites called")
+    print("current_user =", current_user)
+    print("shelter_id =", shelter_id)
+
+
+
     """お気に入りを登録"""
     user_id = _extract_user_id(current_user)
     try:

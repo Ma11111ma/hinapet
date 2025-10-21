@@ -31,11 +31,18 @@ def get_current_user(
     token = creds.credentials
     decoded = verify_id_token(token)  # 例: {"uid": "...", ...}
     uid = decoded.get("uid")
+    email = decoded.get("email")
 
     # ★ここで遅延 import（起動時の循環を防ぐ）
     from app.models.user import User
 
+    # 該当ユーザーを検索
     user = db.query(User).filter(User.firebase_uid == uid).first()
+
+    #ユーザーなければ自動登録
     if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        user = User(firebase_uid=uid, email=email)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
     return user
