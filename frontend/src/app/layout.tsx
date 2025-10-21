@@ -1,11 +1,10 @@
-// src/app/layout.tsx
-import "./globals.css";
-import { Inter } from "next/font/google";
-import { Providers } from "./providers";
+
+//import { Inter } from "next/font/google";
+//import { Providers } from "./providers";
 import React from "react";
 import { Toaster } from "react-hot-toast";
-
-const inter = Inter({ subsets: ["latin"] });
+import { AuthProvider } from "@/features/auth/AuthProvider";
+import "./globals.css";
 
 export default function RootLayout({
   children,
@@ -14,8 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={inter.className}>
-        <Providers>
+      <body>
+        <AuthProvider>
+          
           {children}
 
           {/* ✅ トースト通知コンテナをアプリ全体に配置 */}
@@ -26,8 +26,10 @@ export default function RootLayout({
               style: { fontSize: "0.9rem" },
             }}
           />
-        </Providers>
+        
+        </AuthProvider>
       </body>
     </html>
   );
 }
+
