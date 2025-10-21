@@ -1,4 +1,3 @@
-# backend/app/routers/users.py
 from __future__ import annotations
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -21,7 +20,13 @@ router = APIRouter(prefix="/users", tags=["users"])
     },
 )
 def read_me(current_user: Any = Depends(get_current_user)) -> UserMeResponse:
-    return current_user
+    # Enum を文字列化して安全に返す
+    return UserMeResponse(
+        id=str(getattr(current_user, "id", "")),
+        display_name=getattr(current_user, "display_name", None),
+        email=getattr(current_user, "email", None),
+        plan=str(getattr(current_user, "plan", "")),
+    )
 
 @router.put(
     "/me",
@@ -39,10 +44,6 @@ def update_me(
     db: Session = Depends(get_db),
     current_user: Any = Depends(get_current_user),
 ) -> UserMeResponse:
-    """
-    - email形式はPydanticで検証
-    - None は「未更新」とみなす
-    """
     updated = False
     if payload.display_name is not None:
         current_user.display_name = payload.display_name; updated = True
@@ -52,12 +53,14 @@ def update_me(
         current_user.phone = payload.phone; updated = True
     if hasattr(current_user, "qr") and payload.qr is not None:
         current_user.qr = payload.qr; updated = True
-
     if updated:
-        db.add(current_user)
-        db.commit()
-        db.refresh(current_user)
-    return current_user
+        db.add(current_user); db.commit(); db.refresh(current_user)
+    return UserMeResponse(
+        id=str(current_user.id),
+        display_name=getattr(current_user, "display_name", None),
+        email=getattr(current_user, "email", None),
+        plan=str(getattr(current_user, "plan", "")),
+    )
 
 @router.get(
     "/me/plan",
@@ -69,11 +72,8 @@ def update_me(
     },
 )
 def read_my_plan(current_user: Any = Depends(get_current_user)) -> UserPlanResponse:
-    """
-    返却: plan, premium_until, billing_status, stripe_customer_id, stripe_sub_id
-    """
     return UserPlanResponse(
-        plan=str(getattr(current_user, "plan", None)),
+        plan=str(getattr(current_user, "plan", "")),
         premium_until=getattr(current_user, "premium_until", None),
         billing_status=getattr(current_user, "billing_status", None),
         stripe_customer_id=getattr(current_user, "stripe_customer_id", None),

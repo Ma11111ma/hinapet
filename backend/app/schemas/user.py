@@ -1,4 +1,3 @@
-# backend/app/schemas/user.py
 from __future__ import annotations
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr
@@ -8,22 +7,21 @@ class UserMeResponse(BaseModel):
     display_name: Optional[str] = None
     email: Optional[EmailStr] = None
     plan: str
-    model_config = ConfigDict(from_attributes=True)
+    # ← これを付けると Enum を "free" のような値で出す
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
-# 自分の情報更新用
 class UserMeUpdate(BaseModel):
     display_name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     qr: Optional[str] = None
-    # 未知のキーは無視
     model_config = ConfigDict(extra="ignore")
 
-# プラン参照用
 class UserPlanResponse(BaseModel):
     plan: str
     premium_until: Optional[str] = None
     billing_status: Optional[str] = None
     stripe_customer_id: Optional[str] = None
     stripe_sub_id: Optional[str] = None
-    model_config = ConfigDict(from_attributes=True)
+    # ← 同様に
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)

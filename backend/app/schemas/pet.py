@@ -1,4 +1,3 @@
-# backend/app/schemas/pet.py
 from __future__ import annotations
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,7 +11,8 @@ class PetItem(BaseModel):
     certificate_image_url: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
-    model_config = ConfigDict(from_attributes=True)
+    # ← 追加
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 class PetCreate(BaseModel):
     name: str = Field(..., min_length=1)
