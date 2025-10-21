@@ -108,7 +108,7 @@ async def webhook(
             sig_header=stripe_signature,
             secret=STRIPE_WEBHOOK_SECRET,
         )
-    except stripe.error.SignatureVerificationError:
+    except stripe.SignatureVerificationError:
         # 署名NGは 400 で返す
         raise HTTPException(status_code=400, detail="Invalid signature")
     except Exception:
