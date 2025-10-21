@@ -1,8 +1,8 @@
 
 // src/app/layout.tsx
 import "./globals.css";
-import { Inter } from "next/font/google";
-import { Providers } from "./providers";
+//import { Inter } from "next/font/google";
+//import { Providers } from "./providers";
 import React from "react";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/features/auth/AuthProvider";

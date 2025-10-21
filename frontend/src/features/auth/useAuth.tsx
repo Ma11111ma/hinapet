@@ -1,4 +1,9 @@
-git 
+// frontend/src/features/auth/useAuth.tsx
+"use client";
+
+import { useState, useEffect, createContext, useContext } from "react";
+import { auth, googleProvider } from "@/lib/firebaseClient";
+import {
   signInWithEmailAndPassword,
   signInWithPopup,
   onAuthStateChanged,
