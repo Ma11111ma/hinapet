@@ -1,20 +1,16 @@
 "use client";
-// src/app/login/page.tsx
+
 import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LoginFormUI } from "@/components/LoginFormUI";
-import { useAuth } from "@/features/auth/useAuth";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { auth } from "@/lib/firebaseClient";
 import { postSession } from "@/lib/apiClient";
+import Link from "next/link";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export default function LoginPage() {
-  const {
-    user,
-    signInWithEmail,
-    signInWithGoogle,
-    loading: authLoading,
-  } = useAuth();
+  const { signInWithEmail, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -24,85 +20,74 @@ export default function LoginPage() {
 
   // ✅ ログイン済みならトップまたはダッシュボードへ遷移
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading) return; // 認証状態取得中はスキップ
     if (user) {
-      // router.replace("/"); // または `/dashboard` に変更してもOK
+      router.replace("/"); // すでにログイン済みならトップへ
     }
   }, [authLoading, user, router]);
 
-  // ✅ メール + パスワードログイン処理
+  // メール + パスワードログイン
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
-      // 成功後は useEffect 側で自動遷移
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
+      const result = await signInWithEmail(email, password);
+      if (result?.user) {
+        router.replace("/profileTabs"); // 成功時に /profileTabs へ遷移
       } else {
-        setError("ログインに失敗しました");
+        setError("メールアドレスまたはパスワードが正しくありません。");
       }
+    } catch (err: unknown) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : "ログインに失敗しました");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Googleログイン処理
+  // Googleログイン
   const handleGoogleSignIn = async () => {
     setError(null);
     setLoading(true);
     try {
-      await signInWithGoogle();
-      // 成功後は useEffect 側で自動遷移
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        router.replace("/profileTabs"); // 成功時に /profileTabs へ遷移
       } else {
-        setError("Googleログインに失敗しました");
+        setError("Google認証に失敗しました。");
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ 新規登録（Email + Password）
-  const handleSignUp = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const credential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const idToken = await credential.user.getIdToken();
-      console.log("🔑Firebase ID Token:", idToken);
-      await postSession(idToken); // backend /auth/verify 呼び出し
-      console.log("✅ 新規登録成功:", credential.user.email);
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
-      else setError("新規登録に失敗しました");
+      console.error(err);
+      setError(
+        err instanceof Error ? err.message : "Googleログインに失敗しました"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ UI表示
   return (
-    <main className="flex justify-center items-center min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <LoginFormUI
         email={email}
         password={password}
         onEmailChange={setEmail}
         onPasswordChange={setPassword}
         onSubmit={handleSubmit}
-        onSignUp={handleSignUp}
         onGoogleSignIn={handleGoogleSignIn}
-        loading={loading || authLoading}
+        loading={loading}
         error={error}
       />
+      {/* 中央寄せ・小さめ・ホバーで下線 */}
+      <Link
+        href="/"
+        className="mt-6 inline-flex items-center text-sm text-blue-600 hover:text-blue-700 hover:underline"
+      >
+        <span aria-hidden>←</span>
+        <span className="ml-1">ホームへ戻る</span>
+      </Link>
     </main>
   );
 }
