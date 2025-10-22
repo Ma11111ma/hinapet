@@ -5,7 +5,7 @@ import { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Star, StarOff } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { useFavorites } from "@/hooks/useFavorites";
 
 type Props = {

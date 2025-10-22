@@ -1,6 +1,11 @@
+"use client";
 import MapView from "../../src/components/MapView";
 import PremiumButton from "../components/PremiumButton";
+
 import Link from "next/link";
+
+import FooterAuthButtons from "../../src/components/FooterAuthButtons";
+
 
 export default function Page() {
   return (
@@ -15,12 +20,15 @@ export default function Page() {
         <PremiumButton onUnauthedNavigateTo="/login" />
       </section>
 
+
       {/* マイページへの導線 */}
       <p style={{ marginTop: 16 }}>
         <Link href="/mypage" style={{ color: "#2563eb", textDecoration: "underline" }}>
           → マイページへ
         </Link>
       </p>
+
+      <FooterAuthButtons />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 // src/hooks/useFavorites.ts
 "use client";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/features/auth/useAuth";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { auth } from "@/lib/firebaseClient";
 
 // APIレスポンスの型

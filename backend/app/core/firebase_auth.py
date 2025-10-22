@@ -12,6 +12,7 @@ PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
 CLIENT_EMAIL = os.getenv("FIREBASE_CLIENT_EMAIL")
 PRIVATE_KEY = os.getenv("FIREBASE_PRIVATE_KEY")  # ダブルクオートで囲み、\n 改行を保持
 
+
 @lru_cache(maxsize=1)
 def _init_app() -> None:
     if not firebase_admin._apps:
@@ -26,14 +27,25 @@ def _init_app() -> None:
         })
         firebase_admin.initialize_app(cred)
 
+
 def verify_id_token(id_token: str) -> Dict[str, Any]:
     """
-    Firebase IDトークンを検証し、uid等を含むディクショナリを返す。
-    無効・期限切れ・別プロジェクト発行などは 401。
+    Firebase IDトークンを厳密検証し、uid/email/custom claims を含めて返す。
+    無効・期限切れ・別プロジェクト発行 → 401
     """
     _init_app()
     try:
-        return auth.verify_id_token(id_token)
+        decoded = auth.verify_id_token(id_token)  # exp/iss/audもSDK側で検証される
+        # 正規化：claims は tokenの最上位に混ざるので、必要な値をまとめて返す
+        return {
+            "uid": decoded.get("uid"),
+            "email": decoded.get("email"),
+            "claims": {
+                "admin": bool(decoded.get("admin", False)),
+                "premium": bool(decoded.get("premium", False)),
+            },
+            # 必要なら他のクレームもここで拾う
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
