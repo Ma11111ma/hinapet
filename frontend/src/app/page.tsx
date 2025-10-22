@@ -1,6 +1,7 @@
 "use client";
 import MapView from "../../src/components/MapView";
 import PremiumButton from "../components/PremiumButton";
+import FooterAuthButtons from "../../src/components/FooterAuthButtons";
 
 export default function Page() {
   return (
@@ -14,6 +15,7 @@ export default function Page() {
         {/* 未ログインなら /login に誘導 */}
         <PremiumButton onUnauthedNavigateTo="/login" />
       </section>
+      <FooterAuthButtons />
     </main>
   );
 }

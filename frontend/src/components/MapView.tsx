@@ -256,23 +256,30 @@ export default function MapView() {
             )}
 
             {/*避難所ピン*/}
-            {sortedShelters.map((shelter) => (
-              <Marker
-                key={shelter.id}
-                position={{ lat: shelter.lat, lng: shelter.lng }}
-                title={shelter.name}
-                icon={getShelterPinSymbol(shelter.type)}
-                onClick={() => {
-                  setSelectedShelter(shelter);
-                  if (currentPosition) {
-                    calculateRoute(currentPosition, {
-                      lat: shelter.lat,
-                      lng: shelter.lng,
-                    });
-                  }
-                }}
-              />
-            ))}
+            {sortedShelters.map((shelter) => {
+              const symbol = getShelterPinSymbol(shelter.type);
+
+              // Google Maps SDK がまだ読み込まれていない場合はピンを描画しない
+              if (!symbol) return null;
+
+              return (
+                <Marker
+                  key={shelter.id}
+                  position={{ lat: shelter.lat, lng: shelter.lng }}
+                  title={shelter.name}
+                  icon={symbol} // ✅ null は渡らないので型エラー解消
+                  onClick={() => {
+                    setSelectedShelter(shelter);
+                    if (currentPosition) {
+                      calculateRoute(currentPosition, {
+                        lat: shelter.lat,
+                        lng: shelter.lng,
+                      });
+                    }
+                  }}
+                />
+              );
+            })}
 
             {directions && <DirectionsRenderer directions={directions} />}
             <MapLegend />

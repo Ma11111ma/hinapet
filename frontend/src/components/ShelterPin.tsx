@@ -11,7 +11,15 @@ export type ShelterKind = "accompany" | "companion";
 export function getShelterPinSymbol(
   type: ShelterKind,
   isSelected = false
-): google.maps.Symbol {
+): google.maps.Symbol | null {
+  // ✅ Google Maps SDK 未読み込み時は null を返して安全にスキップ
+  if (typeof window === "undefined" || !("google" in window)) {
+    return null;
+  }
+
+  const googleObj = window.google as typeof google | undefined;
+  if (!googleObj?.maps) return null;
+
   const fillColor = type === "accompany" ? "#1D4ED8" : "#16A34A"; // 青/緑
   const scale = isSelected ? 1.1 : 1.0;
 
