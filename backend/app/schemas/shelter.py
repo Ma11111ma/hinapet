@@ -14,16 +14,11 @@ class ShelterItem(BaseModel):
     address: Optional[str] = None
     type: str
     capacity: int
-    crowd_level: Optional[str] = None
+    crowd_level: Optional[str] = None   # ← これだけにする（重複定義を削除）
     lat: float
     lng: float
-    crowd_level: Optional[CrowdLevel] = CrowdLevel.empty
-
-    # Pydantic v2: 旧 orm_mode → from_attributes
-    model_config = ConfigDict(from_attributes=True)
-
+    # Enum を値で出す
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 class ShelterListResponse(BaseModel):
     items: List[ShelterItem]
-
-
