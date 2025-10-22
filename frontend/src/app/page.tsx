@@ -1,5 +1,6 @@
 import MapView from "../../src/components/MapView";
 import PremiumButton from "../components/PremiumButton";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -13,6 +14,13 @@ export default function Page() {
         {/* 未ログインなら /login に誘導 */}
         <PremiumButton onUnauthedNavigateTo="/login" />
       </section>
+
+      {/* マイページへの導線 */}
+      <p style={{ marginTop: 16 }}>
+        <Link href="/mypage" style={{ color: "#2563eb", textDecoration: "underline" }}>
+          → マイページへ
+        </Link>
+      </p>
     </main>
   );
 }
