@@ -1,3 +1,4 @@
+"use client";
 import MapView from "../../src/components/MapView";
 import PremiumButton from "../components/PremiumButton";
 
