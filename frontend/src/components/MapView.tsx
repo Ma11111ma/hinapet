@@ -191,20 +191,101 @@ export default function MapView() {
           {geoError}
         </div>
       )}
-      {/* 🔍 検索・フィルターUI*/}
-      <div className="absolute top-4 left-4 z-10 space-y-2 bg-white p-3 rounded shadow">
-        <button
-          onClick={getCurrentPosition}
-          className="px-3 py-1 bg-blue-500 text-white rounded"
-        >
-          現在地を再取得
-        </button>
-        <SearchBar onSearch={setKeyword} onClear={handleClearAll} />
-        <ShelterTypeFilter
-          selected={selectedType}
-          onSelect={handleTypeSelect}
-        />
+      {/* 🔍 検索・フィルターUI */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-[90%] max-w-md">
+        {/* 検索バー（Googleマップ風） */}
+        <div className="flex items-center bg-white rounded-full shadow-md px-3 py-2">
+          {/* 📍 現在地ボタン */}
+          <button
+            onClick={getCurrentPosition}
+            className="p-2 text-blue-500 hover:text-blue-700"
+            title="現在地を再取得"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+
+          {/* 🔍 テキスト検索欄 */}
+          <input
+            type="text"
+            placeholder="避難所を検索"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && fetchShelters({ keyword })}
+            className="flex-1 px-2 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
+          />
+        </div>
+
+        {/* 🚪 フィルターボタン群 */}
+        <div className="flex justify-around mt-3">
+          {/* 同行避難所ボタン */}
+          <button
+            onClick={() => handleTypeSelect("accompany")}
+            className={`flex items-center gap-1 px-3 py-2 rounded-full shadow-sm transition-all ${
+              selectedType === "accompany"
+                ? "bg-blue-500 text-white"
+                : "bg-white text-gray-700 border"
+            }`}
+          >
+            {/* 👣 人＋犬アイコン */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7M9 7a3 3 0 100 6 3 3 0 000-6z"
+              />
+            </svg>
+            <span className="text-sm font-medium">同行避難所</span>
+          </button>
+
+          {/* 同伴避難所ボタン */}
+          <button
+            onClick={() => handleTypeSelect("companion")}
+            className={`flex items-center gap-1 px-3 py-2 rounded-full shadow-sm transition-all ${
+              selectedType === "companion"
+                ? "bg-green-500 text-white"
+                : "bg-white text-gray-700 border"
+            }`}
+          >
+            {/* 🏠 犬が入れるアイコン */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 12l9-9 9 9M4 10v10h16V10"
+              />
+            </svg>
+            <span className="text-sm font-medium">同伴避難所</span>
+          </button>
+        </div>
       </div>
+
       {!apiKey ? (
         <p>Maps APIキーが設定されていません（frontend/.env.local）。</p>
       ) : error ? (
@@ -270,8 +351,9 @@ export default function MapView() {
                       position={{ lat: shelter.lat, lng: shelter.lng }}
                       onCloseClick={() => setSelectedShelter(null)}
                       options={{
-                        pixelOffset: new google.maps.Size(0, -40), // ピンの上に少し浮かせる
-                        maxWidth: 320, // 幅制限
+                        pixelOffset: new google.maps.Size(0, -60), // 吹き出しを上方向にずらす
+                        maxWidth: 320,
+                        disableAutoPan: false, // ✅ 吹き出しを自動で中心に移動
                       }}
                     >
                       {/* 🔽 ラッパーを追加：固定幅＆高さを確保 */}
