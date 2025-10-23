@@ -10,7 +10,10 @@ export type PetForm = {
   weight?: string;
   temperament?: string; // 性格・注意点
   medical?: string;     // ワクチン/投薬/アレルギー 等メモ
-  microchip?: string;
+  character?: string;     // 性格・注意点（UI上のテキスト）
+  medicalMemo?: string;   // 医療メモ（ワクチン/投薬/アレルギー）
+  microchip?: string;     // マイクロチップ番号
+
 };
 
 export default function PetRegisterForm({ onSubmit }: { onSubmit: (d: PetForm)=>Promise<void> }) {

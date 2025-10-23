@@ -21,7 +21,8 @@ export const googleProvider = new GoogleAuthProvider();
 console.log("✅ Firebase initialized:", firebaseConfig.projectId);
 
 // IDトークン取得のヘルパー関数
-export async function getIdToken(user: User | null) {
+export async function getIdToken(user: User | null, forceRefresh: boolean = false) {
   if (!user) return null;
-  return await user.getIdToken(/* forceRefresh= */ false);
+  return await user.getIdToken(forceRefresh);
 }
+

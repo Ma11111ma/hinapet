@@ -12,10 +12,17 @@ export default function UserPage() {
     (async () => {
       const u = auth.currentUser;
       if (!u) return;
-      const idToken = await u.getIdToken();
-      const res = await fetch(`${API}/users/me`, {
+      // ★ 強制リフレッシュして取得。401が出たら一度だけ再試行
+      let idToken = await u.getIdToken(true);
+      let res = await fetch(`${API}/users/me`, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
+      if (res.status === 401) {
+        idToken = await u.getIdToken(true);
+        res = await fetch(`${API}/users/me`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+      }
       if (res.ok) {
         const data = await res.json();
         setInitial({
@@ -35,8 +42,9 @@ export default function UserPage() {
   const handleSubmit = async (form: any) => {
     const u = auth.currentUser;
     if (!u) throw new Error("未ログインです");
-    const idToken = await u.getIdToken();
-    const res = await fetch(`${API}/users/me`, {
+    // ★ 送信時も同様に強制リフレッシュ＋401で一度だけ再試行
+    let idToken = await u.getIdToken(true);
+    let res = await fetch(`${API}/users/me`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -44,6 +52,17 @@ export default function UserPage() {
       },
       body: JSON.stringify(form),
     });
+    if (res.status === 401) {
+      idToken = await u.getIdToken(true);
+      res = await fetch(`${API}/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(form),
+      });
+    }
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`${res.status} ${text}`);
