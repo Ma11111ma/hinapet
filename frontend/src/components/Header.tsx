@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { IoNotificationsOutline } from "react-icons/io5";
 import { FaPaw } from "react-icons/fa";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebaseClient";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);

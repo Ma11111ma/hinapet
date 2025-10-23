@@ -2,10 +2,10 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FaUserCircle, FaBookmark, FaDog, FaBell } from "react-icons/fa";
+import { FaUserCircle, FaBookmark, FaDog } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebaseClient";
 
 export default function FooterNav() {
   const [user, setUser] = useState<User | null>(null);
