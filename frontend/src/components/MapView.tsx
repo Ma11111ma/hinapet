@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { MapPin, User, Home } from "lucide-react";
+import ShelterDetailPanel from "./ShelterDetailPanel";
 import {
   GoogleMap,
   LoadScript,
@@ -11,9 +11,6 @@ import {
 import { useShelters } from "../hooks/useShelters";
 import type { Shelter, ShelterType } from "../types/shelter";
 import MapLegend from "./MapLegend";
-import ShelterModal from "./ShelterModal";
-import SearchBar from "./SearchBar";
-import ShelterTypeFilter from "./ShelterTypeFilter";
 import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { getShelterPinSymbol } from "./ShelterPin";
@@ -192,7 +189,7 @@ export default function MapView() {
         </div>
       )}
       {/* 🔍 検索・フィルターUI */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-[90%] max-w-md">
+      <div className="absolute left-1/2 -translate-x-1/2 z-20 w-[92%] max-w-md top-20 md:top-24">
         {/* 検索バー（Googleマップ風） */}
         <div className="flex items-center bg-white rounded-full shadow-md px-3 py-2">
           {/* 📍 現在地ボタン */}
@@ -201,20 +198,8 @@ export default function MapView() {
             className="p-2 text-blue-500 hover:text-blue-700"
             title="現在地を再取得"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            {/* 好きなアイコンに差し替え可 */}
+            <span className="text-lg">📍</span>
           </button>
 
           {/* 🔍 テキスト検索欄 */}
@@ -339,51 +324,46 @@ export default function MapView() {
                   icon={symbol}
                   onClick={() => {
                     setSelectedShelter(shelter);
-                    if (currentPosition)
+
+                    // ✅ ピンをクリックしたときに中央寄せ（上方向に少しずらす）
+                    if (mapRef.current) {
+                      const offsetLat = 0.002; // ピンより少し上方向にずらして中心へ
+                      mapRef.current.panTo({
+                        lat: shelter.lat - offsetLat,
+                        lng: shelter.lng,
+                      });
+                    }
+
+                    // ✅ 現在地があればルートを計算
+                    if (currentPosition) {
                       calculateRoute(currentPosition, {
                         lat: shelter.lat,
                         lng: shelter.lng,
                       });
+                    }
                   }}
-                >
-                  {selectedShelter?.id === shelter.id && (
-                    <InfoWindow
-                      position={{ lat: shelter.lat, lng: shelter.lng }}
-                      onCloseClick={() => setSelectedShelter(null)}
-                      options={{
-                        pixelOffset: new google.maps.Size(0, -60), // 吹き出しを上方向にずらす
-                        maxWidth: 320,
-                        disableAutoPan: false, // ✅ 吹き出しを自動で中心に移動
-                      }}
-                    >
-                      {/* 🔽 ラッパーを追加：固定幅＆高さを確保 */}
-                      <div
-                        style={{
-                          width: "300px",
-                          maxHeight: "380px",
-                          overflowY: "auto",
-                          padding: "4px 6px",
-                        }}
-                      >
-                        <ShelterModal
-                          shelter={shelter}
-                          onClose={() => setSelectedShelter(null)}
-                          onRoute={(dest) =>
-                            currentPosition &&
-                            calculateRoute(currentPosition, dest)
-                          }
-                          distance={distances[String(shelter.id)]?.text ?? "-"}
-                          duration={durations[String(shelter.id)]?.text ?? "-"}
-                        />
-                      </div>
-                    </InfoWindow>
-                  )}
-                </Marker>
+                />
               );
             })}
 
+            {/* 経路描画 */}
             {directions && <DirectionsRenderer directions={directions} />}
+
+            {/* 凡例 */}
             <MapLegend />
+
+            {/* ✅ モバイル：ボトムシート ／ PC：右サイドパネル */}
+            {selectedShelter && (
+              <ShelterDetailPanel
+                shelter={selectedShelter}
+                onClose={() => setSelectedShelter(null)}
+                onRoute={(dest) => {
+                  if (currentPosition) calculateRoute(currentPosition, dest);
+                }}
+                distance={distances[String(selectedShelter.id)]?.text ?? "-"}
+                duration={durations[String(selectedShelter.id)]?.text ?? "-"}
+              />
+            )}
           </GoogleMap>
         </LoadScript>
       )}
