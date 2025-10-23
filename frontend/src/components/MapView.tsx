@@ -46,7 +46,7 @@ const geocodeCurrentPosition = async (lat: number, lng: number) => {
   }
 };
 
-const containerStyle = { width: "100%", height: "600px" };
+const containerStyle = { width: "100vw", height: "calc(100vh - 64px - 56px)" };
 const DEFAULT_LOCATION = { lat: 35.3386, lng: 139.4916 }; // 藤沢市役所
 const DEFAULT_LOCATION_LABEL = "藤沢市役所";
 
@@ -189,7 +189,7 @@ export default function MapView() {
         </div>
       )}
       {/* 🔍 検索・フィルターUI */}
-      <div className="fixed top-[72px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+      <div className="fixed top-[60px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
         {/* 検索バー */}
         <div className="pointer-events-auto">
           <SearchBar onSearch={handleSearch} onClear={handleClear} />
@@ -230,6 +230,16 @@ export default function MapView() {
             zoom={13}
             onLoad={(map) => {
               mapRef.current = map;
+            }}
+            options={{
+              mapTypeControl: false, // ✅ ← 「地図｜航空写真」ボタン削除
+              streetViewControl: false,
+              fullscreenControl: false,
+              zoomControl: true,
+              gestureHandling: "cooperative",
+              disableDefaultUI: false,
+              clickableIcons: false,
+              draggable: true,
             }}
           >
             {/* 現在地ピン */}
@@ -272,11 +282,10 @@ export default function MapView() {
                   onClick={() => {
                     setSelectedShelter(shelter);
 
-                    // ✅ ピンをクリックしたときに中央寄せ（上方向に少しずらす）
-                    if (mapRef.current) {
-                      const offsetLat = 0.002; // ピンより少し上方向にずらして中心へ
-                      mapRef.current.panTo({
-                        lat: shelter.lat - offsetLat,
+                    // ✅ 現在地があればルートを計算
+                    if (currentPosition) {
+                      calculateRoute(currentPosition, {
+                        lat: shelter.lat,
                         lng: shelter.lng,
                       });
                     }
@@ -298,6 +307,23 @@ export default function MapView() {
 
             {/* 凡例 */}
             <MapLegend />
+            {/* 地図タイプ切替ボタン */}
+            <div className="absolute bottom-[120px] left-4 z-30">
+              <div className="flex bg-white rounded-full shadow-md overflow-hidden border border-gray-200">
+                <button
+                  onClick={() => mapRef.current?.setMapTypeId("roadmap")}
+                  className="px-4 py-1 text-sm hover:bg-gray-100 border-r"
+                >
+                  地図
+                </button>
+                <button
+                  onClick={() => mapRef.current?.setMapTypeId("hybrid")}
+                  className="px-4 py-1 text-sm hover:bg-gray-100"
+                >
+                  航空写真
+                </button>
+              </div>
+            </div>
 
             {/* ✅ モバイル：ボトムシート ／ PC：右サイドパネル */}
             {selectedShelter && (

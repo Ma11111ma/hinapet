@@ -39,7 +39,7 @@ export default function Page() {
       <Header />
 
       {/* ✅ メインコンテンツ */}
-      <main className="pt-2 pb-24 px-4">
+      <main className="pt-0 pb-24">
         {/* 地図 */}
         <div className="mb-6">
           <MapView />
