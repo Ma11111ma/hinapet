@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# ★ ログ初期化（PIIマスキング＋環境別出し分け）
+# ログ初期化（PIIマスキング＋環境別出し分け）
 from app.core.logging import setup_logging
 
 # ルーター
@@ -48,11 +48,10 @@ app.add_middleware(RequestIDMiddleware)
 # (2) CORS（本番ドメイン固定／必要時のみPreviewを許可）
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 ALLOW_VERCEL_PREVIEW = os.getenv("ALLOW_VERCEL_PREVIEW", "0") == "1"
-USE_COOKIE_AUTH = os.getenv("USE_COOKIE_AUTH", "0") == "1"  # Cookie 認証を使うなら 1
 
 cors_kwargs = dict(
-    allow_origins=[FRONTEND_URL],           # ★ 本番ドメイン固定
-    allow_credentials=USE_COOKIE_AUTH,      # ★ Cookie を使わないなら False のまま
+    allow_origins=[FRONTEND_URL],           # ★ 本番ドメイン固定（今はローカル http://localhost:3000）
+    allow_credentials=False,                # ★ Cookie 認証は使わないので常に False
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
     max_age=86400,
@@ -63,20 +62,18 @@ if ALLOW_VERCEL_PREVIEW:
 
 app.add_middleware(CORSMiddleware, **cors_kwargs)
 
-# (2.5) ★ PIIマスキング対象となる「リクエスト/レスポンス構造化ログ」ミドルウェア
+# (2.5) リクエスト/レスポンスの構造化ログ（PIIマスキング対象）
 @app.middleware("http")
 async def log_request_middleware(request: Request, call_next):
     """
     すべてのHTTPリクエストを構造化してログ出力。
     app.core.logging.PIIFilter により、メールや Bearer トークンは自動で "***" に伏字。
     """
-    # ノイズを減らすならヘルスチェックは除外（必要ならこの if を削除）
+    # ノイズを減らすならヘルスチェックは除外
     if request.url.path == "/system/health":
-        response = await call_next(request)
-        return response
+        return await call_next(request)
 
-    # ヘッダを dict 化して info ログへ（PII フィルタ対象）
-    headers = dict(request.headers)
+    headers = dict(request.headers)  # Authorizationなども含む（PIIフィルタが伏字にする）
     logger.info({"event": "request", "path": request.url.path, "method": request.method, "headers": headers})
 
     response = await call_next(request)
