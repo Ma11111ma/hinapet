@@ -6,7 +6,8 @@ import type { User } from "firebase/auth";
 
 // 既存の postSession をそのまま保持
 export const postSession = async (idToken: string) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
   const res = await fetch(`${apiUrl}/auth/verify`, {
     method: "POST",
@@ -36,7 +37,8 @@ export interface MeResponse {
  * auth.currentUser から IDトークンを取得
  */
 async function getIdTokenOrThrow(user: User | null): Promise<string> {
-  if (!user) throw new Error("User is not logged in (auth.currentUser is null).");
+  if (!user)
+    throw new Error("User is not logged in (auth.currentUser is null).");
   return await user.getIdToken(false); // forceRefresh=false でOK
 }
 
@@ -49,12 +51,13 @@ export async function fetchCurrentUser(): Promise<MeResponse> {
 
   const token = await getIdTokenOrThrow(user);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   const res = await fetch(`${apiUrl}/users/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`, // ここでトークン付与
+      Authorization: `Bearer ${token}`, // ここでトークン付与
     },
   });
 

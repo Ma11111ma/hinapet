@@ -1,21 +1,22 @@
 "use client";
-import MapView from "../../src/components/MapView";
-import PremiumButton from "../components/PremiumButton";
-import FooterAuthButtons from "../../src/components/FooterAuthButtons";
+
+import Header from "@/components/Header";
+import FooterNav from "@/components/FooterNav";
+import MapView from "@/components/MapView";
 
 export default function Page() {
   return (
-    <main style={{ padding: 16 }}>
-      <h1>避難所マップ</h1>
-      <MapView />
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* ✅ 固定ヘッダー */}
+      <Header />
 
-      <section style={{ marginTop: 24 }}>
-        <h2>プレミアム機能</h2>
-        <p>プレミアムに登録すると追加機能が利用できます。</p>
-        {/* 未ログインなら /login に誘導 */}
-        <PremiumButton onUnauthedNavigateTo="/login" />
-      </section>
-      <FooterAuthButtons />
-    </main>
+      {/* ✅ 全面地図（固定表示） */}
+      <div className="absolute top-[56px] bottom-[56px] left-0 right-0">
+        <MapView />
+      </div>
+
+      {/* ✅ 固定フッター */}
+      <FooterNav />
+    </div>
   );
 }

@@ -2,8 +2,6 @@ from __future__ import annotations #構文ルールで_future_はファイルの
 from dotenv import load_dotenv
 load_dotenv()  # .env の内容を環境変数として読み込む
 
-
-
 # ① .env をロード（先頭付近に追加）
 
 import os
@@ -13,15 +11,12 @@ from dotenv import load_dotenv
 
 # ルーター
 
-
 from app.routers import shelter, users, favorites, premium, pets, family, checklists, news, auth,stripe_webhook # ← premium を追加！
 
 
 # 共通エラーハンドラ
 from app.core.errors import register_exception_handlers
 from app.core.request_id import RequestIDMiddleware
-
-load_dotenv()
 
 # Swagger タグ
 tags_metadata = [
@@ -41,11 +36,14 @@ app.add_middleware(RequestIDMiddleware)
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url,"http://127.0.0.1:3000"],
+    allow_origins=[
+        frontend_url,
+        "http://127.0.0.1:3000",
+    ],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
     max_age=86400,
 )
 
@@ -57,8 +55,6 @@ register_exception_handlers(app)
 app.include_router(shelter.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
-
-
 app.include_router(premium.router)  
 app.include_router(pets.router)
 app.include_router(family.router)
