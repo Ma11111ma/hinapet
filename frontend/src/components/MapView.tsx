@@ -15,6 +15,7 @@ import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { getShelterPinSymbol } from "./ShelterPin";
 import SearchBar from "./SearchBar";
+import ShelterTypeFilter from "./ShelterTypeFilter";
 
 //===GoogleMapsGeocoding API===
 const geocodeCurrentPosition = async (lat: number, lng: number) => {
@@ -128,8 +129,12 @@ export default function MapView() {
     setKeyword("");
     setSelectedType(null);
   };
-  const handleTypeSelect = (t: ShelterType) => {
-    setSelectedType(selectedType === t ? null : t);
+  const handleTypeSelect = (t: ShelterType | null) => {
+    if (!t) {
+      setSelectedType(null);
+    } else {
+      setSelectedType(selectedType === t ? null : t);
+    }
   };
 
   //絞り込み・ソート
@@ -139,7 +144,14 @@ export default function MapView() {
         !keyword ||
         s.name.toLowerCase().includes(keyword.toLowerCase()) ||
         s.address.toLowerCase().includes(keyword.toLowerCase());
-      const matchType = !selectedType || s.type === selectedType;
+
+      // 🔍 種別マッチ（同伴＝秋葉台文化体育館／同行＝それ以外）
+      let matchType = true;
+      if (selectedType === "companion") {
+        matchType = s.name.includes("秋葉台文化体育館");
+      } else if (selectedType === "accompany") {
+        matchType = !s.name.includes("秋葉台文化体育館");
+      }
       return matchKeyword && matchType;
     });
   }, [shelters, keyword, selectedType]);
@@ -194,27 +206,12 @@ export default function MapView() {
         <div className="pointer-events-auto">
           <SearchBar onSearch={handleSearch} onClear={handleClear} />
         </div>
-        <div className="flex justify-center gap-3 mt-2">
-          <button
-            onClick={() => handleTypeSelect("accompany")}
-            className={`px-3 py-1.5 rounded-full border text-sm ${
-              selectedType === "accompany"
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700"
-            }`}
-          >
-            同行避難所
-          </button>
-          <button
-            onClick={() => handleTypeSelect("companion")}
-            className={`px-3 py-1.5 rounded-full border text-sm ${
-              selectedType === "companion"
-                ? "bg-green-500 text-white"
-                : "bg-white text-gray-700"
-            }`}
-          >
-            同伴避難所
-          </button>
+        {/* ✅ ShelterTypeFilterを使用 */}
+        <div className="pointer-events-auto">
+          <ShelterTypeFilter
+            selected={selectedType}
+            onSelect={handleTypeSelect}
+          />
         </div>
       </div>
 
