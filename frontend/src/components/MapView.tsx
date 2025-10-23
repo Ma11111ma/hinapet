@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo, useRef } from "react";
+import { MapPin, User, Home } from "lucide-react";
 import {
   GoogleMap,
   LoadScript,
@@ -75,7 +76,6 @@ export default function MapView() {
     calculate,
     loading: distLoading,
   } = useDistanceMatrix();
-
   const [isLocating, setIsLocating] = useState(false);
 
   const handleTypeSelect = (t: ShelterType | null) => {
@@ -182,18 +182,6 @@ export default function MapView() {
     );
   };
 
-  // // ==ピンの色設定==
-  // const getMarkerColor = (type: ShelterType) => {
-  //   switch (type) {
-  //     case "accompany":
-  //       return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"; // 同行
-  //     case "companion":
-  //       return "http://maps.google.com/mapfiles/ms/icons/green-dot.png"; // 同伴
-  //     default:
-  //       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"; // 不明
-  //   }
-  // };
-
   //==ルート描画==
   return (
     <div className="relative">
@@ -240,7 +228,7 @@ export default function MapView() {
               />
             )}
 
-            {/*現在地情報ウィンドウ*/}
+            {/* 現在地の吹き出し */}
             {showCurrentInfo && currentPosition && (
               <InfoWindow
                 position={currentPosition}
@@ -267,17 +255,48 @@ export default function MapView() {
                   key={shelter.id}
                   position={{ lat: shelter.lat, lng: shelter.lng }}
                   title={shelter.name}
-                  icon={symbol} // ✅ null は渡らないので型エラー解消
+                  icon={symbol}
                   onClick={() => {
                     setSelectedShelter(shelter);
-                    if (currentPosition) {
+                    if (currentPosition)
                       calculateRoute(currentPosition, {
                         lat: shelter.lat,
                         lng: shelter.lng,
                       });
-                    }
                   }}
-                />
+                >
+                  {selectedShelter?.id === shelter.id && (
+                    <InfoWindow
+                      position={{ lat: shelter.lat, lng: shelter.lng }}
+                      onCloseClick={() => setSelectedShelter(null)}
+                      options={{
+                        pixelOffset: new google.maps.Size(0, -40), // ピンの上に少し浮かせる
+                        maxWidth: 320, // 幅制限
+                      }}
+                    >
+                      {/* 🔽 ラッパーを追加：固定幅＆高さを確保 */}
+                      <div
+                        style={{
+                          width: "300px",
+                          maxHeight: "380px",
+                          overflowY: "auto",
+                          padding: "4px 6px",
+                        }}
+                      >
+                        <ShelterModal
+                          shelter={shelter}
+                          onClose={() => setSelectedShelter(null)}
+                          onRoute={(dest) =>
+                            currentPosition &&
+                            calculateRoute(currentPosition, dest)
+                          }
+                          distance={distances[String(shelter.id)]?.text ?? "-"}
+                          duration={durations[String(shelter.id)]?.text ?? "-"}
+                        />
+                      </div>
+                    </InfoWindow>
+                  )}
+                </Marker>
               );
             })}
 
@@ -285,19 +304,6 @@ export default function MapView() {
             <MapLegend />
           </GoogleMap>
         </LoadScript>
-      )}
-
-      {/*==モーダル==*/}
-      {selectedShelter && (
-        <ShelterModal
-          shelter={selectedShelter}
-          onClose={() => setSelectedShelter(null)}
-          onRoute={(dest) => {
-            if (currentPosition) calculateRoute(currentPosition, dest);
-          }}
-          distance={distances[String(selectedShelter.id)]?.text ?? "-"}
-          duration={durations[String(selectedShelter.id)]?.text ?? "-"}
-        />
       )}
     </div>
   );

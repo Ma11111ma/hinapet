@@ -1,11 +1,23 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { auth } from "@/lib/firebaseClient";
-import { onAuthStateChanged, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, User } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  User,
+} from "firebase/auth";
 
 export interface AuthContextType {
-  user: User | null;
+  user: (User & { is_premium?: boolean }) | null;
   loading: boolean;
   initialized: boolean;
   signInWithEmail: (email: string, password: string) => Promise<{ user: User }>;
@@ -15,16 +27,50 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<(User & { is_premium?: boolean }) | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Firebaseトークンを取得して /users/me に問い合わせ
+          const token = await firebaseUser.getIdToken();
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/me`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              credentials: "include",
+            }
+          );
+
+          if (res.ok) {
+            const serverUser = await res.json();
+            // FastAPIのis_premiumを統合
+            setUser({
+              ...firebaseUser,
+              is_premium: serverUser?.is_premium ?? false,
+            });
+          } else {
+            // バックエンド未接続でもFirebase情報だけ維持
+            setUser({ ...firebaseUser, is_premium: false });
+          }
+        } catch (error) {
+          console.error("❌ /users/me fetch error:", error);
+          setUser({ ...firebaseUser, is_premium: false });
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
       setInitialized(true);
     });
+
     return () => unsubscribe();
   }, []);
 

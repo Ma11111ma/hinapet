@@ -4,8 +4,35 @@ import PremiumButton from "../components/PremiumButton";
 import FooterAuthButtons from "../../src/components/FooterAuthButtons";
 import Header from "../components/Header";
 import FooterNav from "@/components/FooterNav";
+import { useState } from "react";
 
 export default function Page() {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handlePremiumClick = async () => {
+    try {
+      setIsProcessing(true);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/stripe/checkout`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error("Stripe checkout作成に失敗しました");
+      const session = await res.json();
+      if (session?.url) {
+        window.location.href = session.url;
+      } else {
+        alert("決済ページを開けませんでした。");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("決済ページを開けませんでした。");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   return (
     <div className="relative min-h-screen bg-gray-50">
       {/* ✅ ヘッダー（固定表示） */}
