@@ -14,6 +14,7 @@ import MapLegend from "./MapLegend";
 import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { getShelterPinSymbol } from "./ShelterPin";
+import SearchBar from "./SearchBar";
 
 //===GoogleMapsGeocoding API===
 const geocodeCurrentPosition = async (lat: number, lng: number) => {
@@ -75,16 +76,6 @@ export default function MapView() {
   } = useDistanceMatrix();
   const [isLocating, setIsLocating] = useState(false);
 
-  const handleTypeSelect = (t: ShelterType | null) => {
-    setSelectedType(selectedType === t ? null : t);
-  };
-
-  // ✅ 検索条件のクリア
-  const handleClearAll = () => {
-    setKeyword("");
-    setSelectedType(null);
-  };
-
   const getCurrentPosition = async () => {
     if (!navigator.geolocation) {
       setGeoError("このブラウザは位置情報取得に対応していません。");
@@ -131,6 +122,15 @@ export default function MapView() {
       calculate(currentPosition, shelters);
     }
   }, [currentPosition, shelters, calculate]);
+
+  const handleSearch = (kw: string) => setKeyword(kw);
+  const handleClear = () => {
+    setKeyword("");
+    setSelectedType(null);
+  };
+  const handleTypeSelect = (t: ShelterType) => {
+    setSelectedType(selectedType === t ? null : t);
+  };
 
   //絞り込み・ソート
   const filteredShelters = useMemo(() => {
@@ -189,84 +189,31 @@ export default function MapView() {
         </div>
       )}
       {/* 🔍 検索・フィルターUI */}
-      <div className="absolute left-1/2 -translate-x-1/2 z-20 w-[92%] max-w-md top-20 md:top-24">
-        {/* 検索バー（Googleマップ風） */}
-        <div className="flex items-center bg-white rounded-full shadow-md px-3 py-2">
-          {/* 📍 現在地ボタン */}
-          <button
-            onClick={getCurrentPosition}
-            className="p-2 text-blue-500 hover:text-blue-700"
-            title="現在地を再取得"
-          >
-            {/* 好きなアイコンに差し替え可 */}
-            <span className="text-lg">📍</span>
-          </button>
-
-          {/* 🔍 テキスト検索欄 */}
-          <input
-            type="text"
-            placeholder="避難所を検索"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && fetchShelters({ keyword })}
-            className="flex-1 px-2 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
-          />
+      <div className="fixed top-[72px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+        {/* 検索バー */}
+        <div className="pointer-events-auto">
+          <SearchBar onSearch={handleSearch} onClear={handleClear} />
         </div>
-
-        {/* 🚪 フィルターボタン群 */}
-        <div className="flex justify-around mt-3">
-          {/* 同行避難所ボタン */}
+        <div className="flex justify-center gap-3 mt-2">
           <button
             onClick={() => handleTypeSelect("accompany")}
-            className={`flex items-center gap-1 px-3 py-2 rounded-full shadow-sm transition-all ${
+            className={`px-3 py-1.5 rounded-full border text-sm ${
               selectedType === "accompany"
                 ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 border"
+                : "bg-white text-gray-700"
             }`}
           >
-            {/* 👣 人＋犬アイコン */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7M9 7a3 3 0 100 6 3 3 0 000-6z"
-              />
-            </svg>
-            <span className="text-sm font-medium">同行避難所</span>
+            同行避難所
           </button>
-
-          {/* 同伴避難所ボタン */}
           <button
             onClick={() => handleTypeSelect("companion")}
-            className={`flex items-center gap-1 px-3 py-2 rounded-full shadow-sm transition-all ${
+            className={`px-3 py-1.5 rounded-full border text-sm ${
               selectedType === "companion"
                 ? "bg-green-500 text-white"
-                : "bg-white text-gray-700 border"
+                : "bg-white text-gray-700"
             }`}
           >
-            {/* 🏠 犬が入れるアイコン */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 12l9-9 9 9M4 10v10h16V10"
-              />
-            </svg>
-            <span className="text-sm font-medium">同伴避難所</span>
+            同伴避難所
           </button>
         </div>
       </div>

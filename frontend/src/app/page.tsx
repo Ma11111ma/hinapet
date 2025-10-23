@@ -34,14 +34,12 @@ export default function Page() {
     }
   };
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen">
       {/* ✅ ヘッダー（固定表示） */}
       <Header />
 
       {/* ✅ メインコンテンツ */}
-      <main className="pt-14 pb-24 px-4">
-        <h1 className="text-xl font-semibold mb-4">避難所マップ</h1>
-
+      <main className="pt-2 pb-24 px-4">
         {/* 地図 */}
         <div className="mb-6">
           <MapView />

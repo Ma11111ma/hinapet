@@ -7,9 +7,10 @@ import { useAuth } from "@/features/auth/AuthProvider";
 type Props = {
   shelter: Shelter;
   onClose: () => void;
-  onRoute: (dest: google.maps.LatLngLiteral) => void;
+  onRoute?: (dest: google.maps.LatLngLiteral) => void;
   distance?: string | null;
   duration?: string | null;
+  nearbyShelters?: Shelter[];
 };
 
 export default function ShelterDetailPanel({
@@ -18,10 +19,11 @@ export default function ShelterDetailPanel({
   onRoute,
   distance,
   duration,
+  nearbyShelters = [],
 }: Props) {
   const { user } = useAuth();
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -36,7 +38,7 @@ export default function ShelterDetailPanel({
     full: "満員",
   };
 
-  // 背景スクロール停止（モバイル時のみ）
+  // モバイル時スクロールロック
   useEffect(() => {
     if (isMobile) document.body.style.overflow = "hidden";
     return () => {
@@ -44,36 +46,35 @@ export default function ShelterDetailPanel({
     };
   }, [isMobile]);
 
-  // ==== PCレイアウト（右サイド固定） ====
+  // ==== PCレイアウト ====
   if (!isMobile) {
     return (
-      <div className="fixed top-16 right-0 h-[calc(100vh-4rem)] w-96 bg-white shadow-2xl border-l border-gray-200 z-40 p-6 overflow-y-auto">
+      <div className="absolute bottom-[72px] right-0 w-[420px] bg-white shadow-2xl border border-gray-200 z-40 rounded-2xl p-5 mr-4">
+        {/* Header */}
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-bold">{shelter.name}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-800"
-          >
-            ✕
-          </button>
+          <h2 className="text-lg font-bold text-gray-800">{shelter.name}</h2>
+          <div className="flex items-center gap-3">
+            <FavoriteButton shelterId={shelter.id} />
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-        <p className="text-gray-700 text-sm mb-1">住所：{shelter.address}</p>
-        <p className="text-gray-700 text-sm mb-1">
-          区分：{shelter.type === "accompany" ? "同行避難" : "同伴避難"}
-        </p>
-        <p className="text-gray-700 text-sm mb-1">
-          混雑度：{crowdLabelMap[shelter.crowd_level ?? "full"]}
-        </p>
-        <p className="text-gray-700 text-sm mb-1">距離：{distance}</p>
-        <p className="text-gray-700 text-sm mb-4">所要時間：約 {duration}</p>
 
-        <div className="flex justify-between mb-3">
-          <button
-            onClick={() => onRoute({ lat: shelter.lat, lng: shelter.lng })}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            ここに行く
-          </button>
+        {/* 詳細情報 */}
+        <div className="text-sm text-gray-700 space-y-1">
+          <p>住所：{shelter.address}</p>
+          <p>区分：{shelter.type === "accompany" ? "同行避難" : "同伴避難"}</p>
+          <p>混雑度：{crowdLabelMap[shelter.crowd_level ?? "full"]}</p>
+          <p>距離：約 {distance}</p>
+          <p>所要時間：約 {duration}</p>
+        </div>
+
+        {/* 避難完了ボタン */}
+        <div className="flex justify-end mt-4">
           <button
             disabled={!user?.is_premium}
             onClick={() =>
@@ -81,7 +82,7 @@ export default function ShelterDetailPanel({
                 ? alert(`${shelter.name} を避難完了にしました`)
                 : alert("この機能はプレミアムユーザー限定です。")
             }
-            className={`px-4 py-2 rounded-md ${
+            className={`px-4 py-2 rounded-md text-sm ${
               user?.is_premium
                 ? "bg-orange-500 text-white hover:bg-orange-600"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -91,12 +92,35 @@ export default function ShelterDetailPanel({
           </button>
         </div>
 
-        <FavoriteButton shelterId={shelter.id} />
+        {/* 周辺避難所リスト */}
+        {nearbyShelters.length > 0 && (
+          <div className="mt-5 border-t pt-3">
+            <h3 className="font-semibold text-gray-800 mb-2 text-sm">
+              周辺の避難所（距離順）
+            </h3>
+            <ul className="divide-y divide-gray-200">
+              {nearbyShelters.map((s) => (
+                <li
+                  key={s.id}
+                  className="py-2 cursor-pointer hover:bg-gray-50 px-1 rounded-md transition"
+                >
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">{s.name}</span>
+                    <span>
+                      {s.type === "accompany" ? "同行" : "同伴"}／
+                      {crowdLabelMap[s.crowd_level ?? "full"]}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     );
   }
 
-  // ==== モバイルレイアウト（ボトムシート） ====
+  // ==== モバイルレイアウト ====
   return (
     <div
       className={`fixed inset-0 z-40 flex justify-center items-end bg-black/30 transition-all ${
@@ -116,33 +140,31 @@ export default function ShelterDetailPanel({
           onClick={() => setIsExpanded(!isExpanded)}
         ></div>
 
+        {/* Header */}
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-lg font-bold">{shelter.name}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-800"
-          >
-            ✕
-          </button>
+          <h2 className="text-lg font-bold text-gray-800">{shelter.name}</h2>
+          <div className="flex items-center gap-3">
+            <FavoriteButton shelterId={shelter.id} />
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
-        <p className="text-gray-700 text-sm">住所：{shelter.address}</p>
-        <p className="text-gray-700 text-sm">
-          区分：{shelter.type === "accompany" ? "同行避難" : "同伴避難"}
-        </p>
-        <p className="text-gray-700 text-sm">
-          混雑度：{crowdLabelMap[shelter.crowd_level ?? "full"]}
-        </p>
-        <p className="text-gray-700 text-sm">距離：約 {distance}</p>
-        <p className="text-gray-700 text-sm mb-4">所要時間：約 {duration}</p>
+        {/* 詳細情報 */}
+        <div className="text-sm text-gray-700 space-y-1">
+          <p>住所：{shelter.address}</p>
+          <p>区分：{shelter.type === "accompany" ? "同行避難" : "同伴避難"}</p>
+          <p>混雑度：{crowdLabelMap[shelter.crowd_level ?? "full"]}</p>
+          <p>距離：約 {distance}</p>
+          <p>所要時間：約 {duration}</p>
+        </div>
 
-        <div className="flex justify-between mb-3">
-          <button
-            onClick={() => onRoute({ lat: shelter.lat, lng: shelter.lng })}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            ここに行く
-          </button>
+        {/* 避難完了ボタン */}
+        <div className="flex justify-end mt-4">
           <button
             disabled={!user?.is_premium}
             onClick={() =>
@@ -150,7 +172,7 @@ export default function ShelterDetailPanel({
                 ? alert(`${shelter.name} を避難完了にしました`)
                 : alert("この機能はプレミアムユーザー限定です。")
             }
-            className={`px-4 py-2 rounded-md ${
+            className={`px-4 py-2 rounded-md text-sm ${
               user?.is_premium
                 ? "bg-orange-500 text-white hover:bg-orange-600"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -160,7 +182,30 @@ export default function ShelterDetailPanel({
           </button>
         </div>
 
-        <FavoriteButton shelterId={shelter.id} />
+        {/* 周辺避難所リスト */}
+        {nearbyShelters.length > 0 && (
+          <div className="mt-5 border-t pt-3">
+            <h3 className="font-semibold text-gray-800 mb-2 text-sm">
+              周辺の避難所（距離順）
+            </h3>
+            <ul className="divide-y divide-gray-200">
+              {nearbyShelters.map((s) => (
+                <li
+                  key={s.id}
+                  className="py-2 cursor-pointer hover:bg-gray-50 px-1 rounded-md transition"
+                >
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">{s.name}</span>
+                    <span>
+                      {s.type === "accompany" ? "同行" : "同伴"}／
+                      {crowdLabelMap[s.crowd_level ?? "full"]}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
