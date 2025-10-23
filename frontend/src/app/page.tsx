@@ -13,7 +13,7 @@ export default function Page() {
     try {
       setIsProcessing(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/stripe/checkout`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/premium/checkout`,
         {
           method: "POST",
           credentials: "include",

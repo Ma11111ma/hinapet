@@ -330,9 +330,6 @@ export default function MapView() {
               <ShelterDetailPanel
                 shelter={selectedShelter}
                 onClose={() => setSelectedShelter(null)}
-                onRoute={(dest) => {
-                  if (currentPosition) calculateRoute(currentPosition, dest);
-                }}
                 distance={distances[String(selectedShelter.id)]?.text ?? "-"}
                 duration={durations[String(selectedShelter.id)]?.text ?? "-"}
               />
