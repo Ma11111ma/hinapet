@@ -27,37 +27,37 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-white/90 backdrop-blur-md shadow-sm hover:shadow-md transition-shadow duration-200">
+    <header className="sticky top-0 z-30 w-full bg-[#FFF3D9] shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="mx-auto max-w-screen-lg flex items-center justify-between px-4 py-2">
         {/* 🐾 ロゴ部分 */}
         <Link
           href="/"
           className="flex items-center gap-2 hover:opacity-80 transition"
         >
-          <FaPaw className="text-orange-500 text-xl" />
-          <span className="font-bold text-lg text-gray-800">ひなペット</span>
+          <FaPaw className="text-[#F6A93A] text-xl" />
+          <span className="font-bold text-lg text-[#8B4A18]">ひなペット</span>
         </Link>
 
         <div className="flex items-center space-x-4">
           {/* 🔐 ログイン／ログアウト */}
           <button
             onClick={handleAuthClick}
-            className={`text-sm font-medium ${
+            className={`text-sm font-medium transition ${
               user
-                ? "text-gray-600 hover:text-gray-800"
-                : "text-blue-600 hover:text-blue-800"
-            } transition`}
+                ? "text-[#8B4A18] hover:text-[#F6A93A]"
+                : "text-[#8B4A18] hover:text-[#F6A93A]"
+            }`}
           >
             {user ? "ログアウト" : "ログイン"}
           </button>
 
-          {/* 🔔 通知アイコン（クリックで /profileTabs） */}
+          {/* 🔔 通知アイコン */}
           <Link
             href="/profileTabs"
-            className="relative flex items-center justify-center hover:text-orange-500 transition"
+            className="relative flex items-center justify-center hover:text-[#F6A93A] transition"
           >
-            <IoNotificationsOutline className="text-2xl text-gray-700" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full px-[4px] py-[1px]">
+            <IoNotificationsOutline className="text-2xl text-[#8B4A18]" />
+            <span className="absolute -top-1 -right-1 bg-[#F6A93A] text-white text-[10px] rounded-full px-[4px] py-[1px]">
               3
             </span>
           </Link>

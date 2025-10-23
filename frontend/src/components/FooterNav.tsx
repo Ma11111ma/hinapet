@@ -29,42 +29,42 @@ export default function FooterNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-white shadow-inner z-20 flex justify-around py-2">
-      {/* マイページ */}
+    <nav className="fixed bottom-0 left-0 w-full bg-[#FFF3D9] border-t border-[#F6A93A]/30 shadow-sm z-20 flex justify-around py-2">
+      {/* 👤 マイページ */}
       <Link
         href="/profileTabs"
-        className="flex flex-col items-center text-gray-600 hover:text-orange-500"
+        className="flex flex-col items-center text-[#8B4A18] hover:text-[#F6A93A] transition"
       >
         <FaUserCircle size={22} />
-        <span className="text-xs">マイページ</span>
+        <span className="text-xs mt-0.5 font-medium">マイページ</span>
       </Link>
 
-      {/* ペット */}
+      {/* 🐶 ペット */}
       <Link
         href="/profileTabs"
-        className="flex flex-col items-center text-gray-600 hover:text-orange-500"
+        className="flex flex-col items-center text-[#8B4A18] hover:text-[#F6A93A] transition"
       >
         <FaDog size={22} />
-        <span className="text-xs">ペット</span>
+        <span className="text-xs mt-0.5 font-medium">ペット</span>
       </Link>
 
-      {/* 保存済み */}
+      {/* 🔖 保存済み */}
       <Link
         href="/profileTabs"
-        className="flex flex-col items-center text-gray-600 hover:text-orange-500"
+        className="flex flex-col items-center text-[#8B4A18] hover:text-[#F6A93A] transition"
       >
         <FaBookmark size={20} />
-        <span className="text-xs">保存済み</span>
+        <span className="text-xs mt-0.5 font-medium">保存済み</span>
       </Link>
 
-      {/* メニュー（ログイン／ログアウト） */}
-      <button
-        onClick={handleAuthClick}
-        className="flex flex-col items-center text-gray-600 hover:text-orange-500"
+      {/* 🍔 メニュー */}
+      <Link
+        href="/profileTabs"
+        className="flex flex-col items-center text-[#8B4A18] hover:text-[#F6A93A] transition"
       >
         <GiHamburgerMenu size={22} />
-        <span className="text-xs">{user ? "ログアウト" : "ログイン"}</span>
-      </button>
+        <span className="text-xs mt-0.5 font-medium">メニュー</span>
+      </Link>
     </nav>
   );
 }
