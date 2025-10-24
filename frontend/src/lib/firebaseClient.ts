@@ -9,7 +9,6 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  // ... 他の設定
 };
 
 // すでに初期化済みかをチェックし、再利用
@@ -18,10 +17,13 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-console.log("✅ Firebase initialized:", firebaseConfig.projectId);
-
 // IDトークン取得のヘルパー関数
 export async function getIdToken(user: User | null) {
   if (!user) return null;
   return await user.getIdToken(/* forceRefresh= */ false);
+}
+
+// ✅ ログ（開発時のみ）
+if (process.env.NODE_ENV === "development") {
+  console.log("✅ Firebase initialized:", firebaseConfig.projectId);
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebaseClient";
 
 /**
  * トップページ下部に配置するログイン／ログアウトボタン。

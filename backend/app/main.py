@@ -1,5 +1,9 @@
-# backend/app/main.py
-from __future__ import annotations
+
+from __future__ import annotations #構文ルールで_future_はファイルの最初の文でなければダメ
+from dotenv import load_dotenv
+load_dotenv()  # .env の内容を環境変数として読み込む
+
+# ① .env をロード（先頭付近に追加）
 
 import os
 import logging
@@ -7,11 +11,15 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
+
 # ログ初期化（PIIマスキング＋環境別出し分け）
 from app.core.logging import setup_logging
 
 # ルーター
-from app.routers import shelter, users, favorites, premium, pets, family, checklists, news, auth
+
+from app.routers import shelter, users, favorites, premium, pets, family, checklists, news, auth,stripe_webhook # ← premium を追加！
+
+
 
 # 共通エラーハンドラ
 from app.core.errors import register_exception_handlers
@@ -32,6 +40,7 @@ setup_logging(os.getenv("ENV") or os.getenv("APP_ENV"))
 
 logger = logging.getLogger(__name__)
 
+# Swagger タグ
 tags_metadata = [
     {"name": "shelters",  "description": "避難所検索・詳細"},
     {"name": "users",     "description": "ユーザー情報（認証必須）"},
@@ -45,6 +54,7 @@ app = FastAPI(title="Pet Evacuation App API", openapi_tags=tags_metadata)
 # (1) trace_id ミドルウェア
 app.add_middleware(RequestIDMiddleware)
 
+
 # (2) CORS（本番ドメイン固定／必要時のみPreviewを許可）
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 ALLOW_VERCEL_PREVIEW = os.getenv("ALLOW_VERCEL_PREVIEW", "0") == "1"
@@ -52,8 +62,9 @@ ALLOW_VERCEL_PREVIEW = os.getenv("ALLOW_VERCEL_PREVIEW", "0") == "1"
 cors_kwargs = dict(
     allow_origins=[FRONTEND_URL],           # ★ 本番ドメイン固定（今はローカル http://localhost:3000）
     allow_credentials=False,                # ★ Cookie 認証は使わないので常に False
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+
     max_age=86400,
 )
 # Preview を許可したいときだけ正規表現を追加
@@ -95,7 +106,7 @@ async def _init_rate_limiter():
 app.include_router(shelter.router)
 app.include_router(users.router)
 app.include_router(favorites.router)
-app.include_router(premium.router)
+app.include_router(premium.router)  
 app.include_router(pets.router)
 app.include_router(family.router)
 app.include_router(checklists.router)
