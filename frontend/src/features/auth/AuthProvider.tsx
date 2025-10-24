@@ -52,10 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (res.ok) {
             const serverUser = await res.json();
             // FastAPIのis_premiumを統合
-            setUser({
-              ...firebaseUser,
-              is_premium: serverUser?.is_premium ?? false,
-            });
+            setUser(
+              Object.assign(firebaseUser, {
+                is_premium: serverUser?.is_premium ?? false,
+              })
+            );
           } else {
             // バックエンド未接続でもFirebase情報だけ維持
             setUser({ ...firebaseUser, is_premium: false });

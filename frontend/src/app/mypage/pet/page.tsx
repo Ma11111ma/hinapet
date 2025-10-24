@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { auth, getIdToken } from "@/lib/firebaseClient";
+import { useAuth } from "@/features/auth/AuthProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
@@ -13,62 +14,39 @@ type Pet = {
 };
 
 export default function PetListPage() {
+  const { user, loading, initialized } = useAuth();
   const [pets, setPets] = useState<Pet[]>([]);
   const [err, setErr] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (loading || !initialized) return; // Firebase準備が終わるまで待つ
+    if (!user) {
+      setErr("未ログインです。右下のボタンからログインしてください。");
+      return;
+    }
+
     (async () => {
       try {
         setErr(null);
-        setLoading(true);
 
-        const u = auth.currentUser;
-        if (!u) {
-          setErr("未ログインです。右下のボタンからログインしてください。");
-          setLoading(false);
-          return;
-        }
-
-        // まず通常のトークンで取得
-        let idToken = await getIdToken(u); // forceRefresh=false
-        let res = await fetch(`${API}/pets?owner=me`, {
+        const idToken = await getIdToken(user);
+        const res = await fetch(`${API}/users/me/pets`, {
           headers: { Authorization: `Bearer ${idToken}` },
         });
 
-        // 401 なら 1回だけ強制リフレッシュして再試行
-        if (res.status === 401) {
-          idToken = await getIdToken(u, true);
-          res = await fetch(`${API}/pets?owner=me`, {
-            headers: { Authorization: `Bearer ${idToken}` },
-          });
-        }
+        if (!res.ok) throw new Error(await res.text());
 
-        if (res.status === 404) {
-          // データが無いだけ（エラーではない）
-          setPets([]);
-          setLoading(false);
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error(await res.text());
-        }
-
-        const data: Pet[] = await res.json();
-        setPets(data ?? []);
-      } catch (e: unknown) {
-        // ✅ unknown型 → Error型チェックで安全に処理
-        if (e instanceof Error) {
-          setErr(e.message);
-        } else {
-          setErr("予期せぬエラーが発生しました");
-        }
-      } finally {
-        setLoading(false);
+        const json = await res.json();
+        setPets(json.items ?? []);
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "読み込みに失敗しました");
       }
     })();
-  }, []);
+  }, [user, loading, initialized]);
+
+  if (loading) {
+    return <p className="text-gray-500">認証状態を確認中...</p>;
+  }
 
   return (
     <main className="max-w-4xl mx-auto p-6">

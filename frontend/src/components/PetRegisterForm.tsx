@@ -1,156 +1,183 @@
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
 
-export type PetForm = {
-  name: string;
-  species: string; // 犬/猫など
-  breed?: string; // 犬種・猫種
-  sex?: string; // オス/メス
-  birthday?: string; // YYYY-MM-DD
-  weight?: string;
-  temperament?: string; // 性格・注意点
-  medical?: string; // ワクチン/投薬/アレルギー 等メモ
-  character?: string; // 性格・注意点（UI上のテキスト）
-  medicalMemo?: string; // 医療メモ（ワクチン/投薬/アレルギー）
-  microchip?: string; // マイクロチップ番号
-};
+import { FormEvent } from "react";
+import Image from "next/image";
+import { usePetFormStore } from "@/store/petFormStore";
 
 type Props = {
-  onSubmit: (d: PetForm) => Promise<void>;
+  onSubmit: () => Promise<void>;
 };
 
 export default function PetRegisterForm({ onSubmit }: Props) {
-  const [f, setF] = useState<PetForm>({ name: "", species: "" });
-  const [loading, setLoading] = useState(false);
-  const [ok, setOk] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const { data: f, setField } = usePetFormStore();
 
-  // ✅ ChangeEvent型で安全に
-  const input =
-    (k: keyof PetForm) =>
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setF({ ...f, [k]: e.target.value });
-    };
-
-  // ✅ FormEvent型で安全に
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setErr(null);
-    setOk(false);
-    setLoading(true);
-    try {
-      await onSubmit(f);
-      setOk(true);
-      setF({ name: "", species: "" });
-    } catch (e: unknown) {
-      // ✅ unknown型で安全に扱う
-      if (e instanceof Error) {
-        setErr(e.message);
-      } else {
-        setErr("登録に失敗しました");
-      }
-    } finally {
-      setLoading(false);
-    }
+    await onSubmit(); // ✅ /mypage/pet/new/page.tsx で定義した保存処理を呼び出す
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form onSubmit={submit} className="space-y-4">
+      {/* 写真 */}
       <div>
-        <label className="block text-sm mb-1">ペット名</label>
+        <label className="block text-sm mb-1">写真（任意）</label>
         <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const url = URL.createObjectURL(file);
+              setField("photoUrl", url);
+            }
+          }}
+        />
+        {f.photoUrl && (
+          <div className="mt-2 relative w-32 h-32">
+            <Image
+              src={f.photoUrl}
+              alt="ペット写真プレビュー"
+              fill
+              className="object-cover rounded"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* 名前 */}
+      <div>
+        <label className="block text-sm mb-1">名前 *</label>
+        <input
+          required
           className="w-full border rounded px-3 py-2"
           value={f.name}
-          onChange={input("name")}
-          required
+          onChange={(e) => setField("name", e.target.value)}
         />
       </div>
+
+      {/* 性別 */}
       <div>
-        <label className="block text-sm mb-1">種類（犬・猫など）</label>
+        <label className="block text-sm mb-1">性別</label>
+        <div className="flex gap-3">
+          {["女の子", "男の子"].map((g) => (
+            <button
+              type="button"
+              key={g}
+              onClick={() => setField("gender", g as "女の子" | "男の子")}
+              className={`px-3 py-1 rounded border ${
+                f.gender === g ? "bg-indigo-600 text-white" : "bg-white"
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 生年月日 */}
+      <div>
+        <label className="block text-sm mb-1">生年月日</label>
+        <input
+          type="date"
+          className="w-full border rounded px-3 py-2"
+          value={f.birthdate ?? ""}
+          onChange={(e) => setField("birthdate", e.target.value)}
+        />
+      </div>
+
+      {/* 去勢避妊 */}
+      <div>
+        <label className="block text-sm mb-1">去勢避妊手術</label>
+        <div className="flex gap-3">
+          {["未", "済"].map((v) => (
+            <button
+              type="button"
+              key={v}
+              onClick={() => setField("neutered", v as "未" | "済")}
+              className={`px-3 py-1 rounded border ${
+                f.neutered === v ? "bg-indigo-600 text-white" : "bg-white"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 種類 */}
+      <div>
+        <label className="block text-sm mb-1">動物の種類 *</label>
+        <div className="flex gap-3">
+          {["犬", "猫", "その他"].map((s) => (
+            <button
+              type="button"
+              key={s}
+              onClick={() => setField("species", s as "犬" | "猫" | "その他")}
+              className={`px-3 py-1 rounded border ${
+                f.species === s ? "bg-indigo-600 text-white" : "bg-white"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+        {f.species === "その他" && (
+          <input
+            placeholder="動物の種類を入力"
+            className="mt-2 w-full border rounded px-3 py-2"
+            value={f.speciesOther ?? ""}
+            onChange={(e) => setField("speciesOther", e.target.value)}
+          />
+        )}
+      </div>
+
+      {/* 医療情報 */}
+      <div>
+        <label className="block text-sm mb-1">かかりつけ動物病院</label>
         <input
           className="w-full border rounded px-3 py-2"
-          value={f.species}
-          onChange={input("species")}
-          required
+          value={f.clinicName ?? ""}
+          onChange={(e) => setField("clinicName", e.target.value)}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm mb-1">犬種/猫種</label>
-          <input
-            className="w-full border rounded px-3 py-2"
-            value={f.breed ?? ""}
-            onChange={input("breed")}
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">性別</label>
-          <input
-            className="w-full border rounded px-3 py-2"
-            value={f.sex ?? ""}
-            onChange={input("sex")}
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm mb-1">誕生日</label>
-          <input
-            type="date"
-            className="w-full border rounded px-3 py-2"
-            value={f.birthday ?? ""}
-            onChange={input("birthday")}
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">体重</label>
-          <input
-            className="w-full border rounded px-3 py-2"
-            value={f.weight ?? ""}
-            onChange={input("weight")}
-          />
-        </div>
-      </div>
+
       <div>
-        <label className="block text-sm mb-1">性格・注意点</label>
+        <label className="block text-sm mb-1">既往歴</label>
         <textarea
           className="w-full border rounded px-3 py-2"
           rows={2}
-          value={f.temperament ?? ""}
-          onChange={input("temperament")}
+          value={f.history ?? ""}
+          onChange={(e) => setField("history", e.target.value)}
         />
       </div>
+
       <div>
-        <label className="block text-sm mb-1">
-          医療メモ（ワクチン/投薬/アレルギー）
-        </label>
+        <label className="block text-sm mb-1">飲んでいる薬</label>
+        <textarea
+          className="w-full border rounded px-3 py-2"
+          rows={2}
+          value={f.medication ?? ""}
+          onChange={(e) => setField("medication", e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm mb-1">備考</label>
         <textarea
           className="w-full border rounded px-3 py-2"
           rows={3}
-          value={f.medical ?? ""}
-          onChange={input("medical")}
-        />
-      </div>
-      <div>
-        <label className="block text-sm mb-1">マイクロチップ番号</label>
-        <input
-          className="w-full border rounded px-3 py-2"
-          value={f.microchip ?? ""}
-          onChange={input("microchip")}
+          value={f.memo ?? ""}
+          onChange={(e) => setField("memo", e.target.value)}
         />
       </div>
 
+      {/* 登録ボタン */}
       <button
-        disabled={loading}
-        className={`px-4 py-2 rounded text-white ${
-          loading ? "bg-indigo-300" : "bg-indigo-600"
-        }`}
+        className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+        type="submit"
       >
-        {loading ? "登録中…" : "登録する"}
+        保存する
       </button>
-
-      {ok && <p className="text-green-600">登録しました</p>}
-      {err && <p className="text-red-600">エラー: {err}</p>}
     </form>
   );
 }

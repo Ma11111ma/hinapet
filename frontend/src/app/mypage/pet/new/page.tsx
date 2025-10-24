@@ -1,10 +1,17 @@
 "use client";
 
 // import { auth } from "@/lib/firebaseClient";
+import { useRouter } from "next/navigation";
 import PetRegisterForm from "@/components/PetRegisterForm";
 import { usePetFormStore } from "@/store/petFormStore";
 
 // const API = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+// // 日本語→英語Enum変換マップ
+// const speciesMap: Record<string, "dog" | "cat" | "other"> = {
+//   犬: "dog",
+//   猫: "cat",
+//   その他: "other",
+// };
 
 export default function PetNewPage() {
   // const submit = async (form: PetForm) => {
@@ -55,18 +62,19 @@ export default function PetNewPage() {
   //     throw new Error(`${res.status} ${text}`);
   //   }
   // };
-
+  const router = useRouter();
   const { data, reset } = usePetFormStore();
+
   const handleSubmit = async () => {
-    // 現段階ではバックエンドへの送信を止め、暗号化ストアへの保存のみ
     alert("入力内容を暗号化して保存しました。ページを閉じても復元されます。");
     console.log("暗号化保存済みデータ:", data);
+    router.push("/mypage/pet"); // ✅ 一覧ページへ遷移
   };
 
   return (
     <main className="max-w-3xl mx-auto p-6">
       <h2 className="text-lg font-semibold mb-4">ペット新規登録</h2>
-      <PetRegisterForm onSubmit={handleSubmit} />
+      <PetRegisterForm onSubmit={handleSubmit} /> {/* ✅ Props渡しOK */}
       <button
         onClick={() => {
           reset();
