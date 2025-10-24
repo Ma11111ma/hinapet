@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo, useRef } from "react";
+import ShelterDetailPanel from "./ShelterDetailPanel";
 import {
   GoogleMap,
   LoadScript,
@@ -10,16 +11,15 @@ import {
 import { useShelters } from "../hooks/useShelters";
 import type { Shelter, ShelterType } from "../types/shelter";
 import MapLegend from "./MapLegend";
-import ShelterModal from "./ShelterModal";
-import SearchBar from "./SearchBar";
-import ShelterTypeFilter from "./ShelterTypeFilter";
 import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { getShelterPinSymbol } from "./ShelterPin";
+import SearchBar from "./SearchBar";
+import ShelterTypeFilter from "./ShelterTypeFilter";
 
 //===GoogleMapsGeocoding API===
 const geocodeCurrentPosition = async (lat: number, lng: number) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL; // http://localhost:8000
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // http://localhost:8000
   const url = `${apiUrl}/geocode?address=${lat},${lng}`;
   try {
     const res = await fetch(url);
@@ -47,7 +47,7 @@ const geocodeCurrentPosition = async (lat: number, lng: number) => {
   }
 };
 
-const containerStyle = { width: "100%", height: "600px" };
+const containerStyle = { width: "100vw", height: "calc(100vh - 64px - 56px)" };
 const DEFAULT_LOCATION = { lat: 35.3386, lng: 139.4916 }; // 藤沢市役所
 const DEFAULT_LOCATION_LABEL = "藤沢市役所";
 
@@ -75,18 +75,7 @@ export default function MapView() {
     calculate,
     loading: distLoading,
   } = useDistanceMatrix();
-
   const [isLocating, setIsLocating] = useState(false);
-
-  const handleTypeSelect = (t: ShelterType | null) => {
-    setSelectedType(selectedType === t ? null : t);
-  };
-
-  // ✅ 検索条件のクリア
-  const handleClearAll = () => {
-    setKeyword("");
-    setSelectedType(null);
-  };
 
   const getCurrentPosition = async () => {
     if (!navigator.geolocation) {
@@ -135,6 +124,19 @@ export default function MapView() {
     }
   }, [currentPosition, shelters, calculate]);
 
+  const handleSearch = (kw: string) => setKeyword(kw);
+  const handleClear = () => {
+    setKeyword("");
+    setSelectedType(null);
+  };
+  const handleTypeSelect = (t: ShelterType | null) => {
+    if (!t) {
+      setSelectedType(null);
+    } else {
+      setSelectedType(selectedType === t ? null : t);
+    }
+  };
+
   //絞り込み・ソート
   const filteredShelters = useMemo(() => {
     return shelters.filter((s) => {
@@ -142,7 +144,14 @@ export default function MapView() {
         !keyword ||
         s.name.toLowerCase().includes(keyword.toLowerCase()) ||
         s.address.toLowerCase().includes(keyword.toLowerCase());
-      const matchType = !selectedType || s.type === selectedType;
+
+      // 🔍 種別マッチ（同伴＝秋葉台文化体育館／同行＝それ以外）
+      let matchType = true;
+      if (selectedType === "companion") {
+        matchType = s.name.includes("秋葉台文化体育館");
+      } else if (selectedType === "accompany") {
+        matchType = !s.name.includes("秋葉台文化体育館");
+      }
       return matchKeyword && matchType;
     });
   }, [shelters, keyword, selectedType]);
@@ -182,18 +191,6 @@ export default function MapView() {
     );
   };
 
-  // // ==ピンの色設定==
-  // const getMarkerColor = (type: ShelterType) => {
-  //   switch (type) {
-  //     case "accompany":
-  //       return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"; // 同行
-  //     case "companion":
-  //       return "http://maps.google.com/mapfiles/ms/icons/green-dot.png"; // 同伴
-  //     default:
-  //       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"; // 不明
-  //   }
-  // };
-
   //==ルート描画==
   return (
     <div className="relative">
@@ -203,20 +200,21 @@ export default function MapView() {
           {geoError}
         </div>
       )}
-      {/* 🔍 検索・フィルターUI*/}
-      <div className="absolute top-4 left-4 z-10 space-y-2 bg-white p-3 rounded shadow">
-        <button
-          onClick={getCurrentPosition}
-          className="px-3 py-1 bg-blue-500 text-white rounded"
-        >
-          現在地を再取得
-        </button>
-        <SearchBar onSearch={setKeyword} onClear={handleClearAll} />
-        <ShelterTypeFilter
-          selected={selectedType}
-          onSelect={handleTypeSelect}
-        />
+      {/* 🔍 検索・フィルターUI */}
+      <div className="fixed top-[60px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+        {/* 検索バー */}
+        <div className="pointer-events-auto">
+          <SearchBar onSearch={handleSearch} onClear={handleClear} />
+        </div>
+        {/* ✅ ShelterTypeFilterを使用 */}
+        <div className="pointer-events-auto">
+          <ShelterTypeFilter
+            selected={selectedType}
+            onSelect={handleTypeSelect}
+          />
+        </div>
       </div>
+
       {!apiKey ? (
         <p>Maps APIキーが設定されていません（frontend/.env.local）。</p>
       ) : error ? (
@@ -230,6 +228,16 @@ export default function MapView() {
             onLoad={(map) => {
               mapRef.current = map;
             }}
+            options={{
+              mapTypeControl: false, // ✅ ← 「地図｜航空写真」ボタン削除
+              streetViewControl: false,
+              fullscreenControl: false,
+              zoomControl: true,
+              gestureHandling: "cooperative",
+              disableDefaultUI: false,
+              clickableIcons: false,
+              draggable: true,
+            }}
           >
             {/* 現在地ピン */}
             {currentPosition && (
@@ -240,7 +248,7 @@ export default function MapView() {
               />
             )}
 
-            {/*現在地情報ウィンドウ*/}
+            {/* 現在地の吹き出し */}
             {showCurrentInfo && currentPosition && (
               <InfoWindow
                 position={currentPosition}
@@ -267,9 +275,19 @@ export default function MapView() {
                   key={shelter.id}
                   position={{ lat: shelter.lat, lng: shelter.lng }}
                   title={shelter.name}
-                  icon={symbol} // ✅ null は渡らないので型エラー解消
+                  icon={symbol}
                   onClick={() => {
                     setSelectedShelter(shelter);
+
+                    // ✅ 現在地があればルートを計算
+                    if (currentPosition) {
+                      calculateRoute(currentPosition, {
+                        lat: shelter.lat,
+                        lng: shelter.lng,
+                      });
+                    }
+
+                    // ✅ 現在地があればルートを計算
                     if (currentPosition) {
                       calculateRoute(currentPosition, {
                         lat: shelter.lat,
@@ -281,23 +299,40 @@ export default function MapView() {
               );
             })}
 
+            {/* 経路描画 */}
             {directions && <DirectionsRenderer directions={directions} />}
+
+            {/* 凡例 */}
             <MapLegend />
+            {/* 地図タイプ切替ボタン */}
+            <div className="absolute bottom-[120px] left-4 z-30">
+              <div className="flex bg-white rounded-full shadow-md overflow-hidden border border-gray-200">
+                <button
+                  onClick={() => mapRef.current?.setMapTypeId("roadmap")}
+                  className="px-4 py-1 text-sm hover:bg-gray-100 border-r"
+                >
+                  地図
+                </button>
+                <button
+                  onClick={() => mapRef.current?.setMapTypeId("hybrid")}
+                  className="px-4 py-1 text-sm hover:bg-gray-100"
+                >
+                  航空写真
+                </button>
+              </div>
+            </div>
+
+            {/* ✅ モバイル：ボトムシート ／ PC：右サイドパネル */}
+            {selectedShelter && (
+              <ShelterDetailPanel
+                shelter={selectedShelter}
+                onClose={() => setSelectedShelter(null)}
+                distance={distances[String(selectedShelter.id)]?.text ?? "-"}
+                duration={durations[String(selectedShelter.id)]?.text ?? "-"}
+              />
+            )}
           </GoogleMap>
         </LoadScript>
-      )}
-
-      {/*==モーダル==*/}
-      {selectedShelter && (
-        <ShelterModal
-          shelter={selectedShelter}
-          onClose={() => setSelectedShelter(null)}
-          onRoute={(dest) => {
-            if (currentPosition) calculateRoute(currentPosition, dest);
-          }}
-          distance={distances[String(selectedShelter.id)]?.text ?? "-"}
-          duration={durations[String(selectedShelter.id)]?.text ?? "-"}
-        />
       )}
     </div>
   );

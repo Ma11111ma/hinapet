@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { LoginFormUI } from "@/components/LoginFormUI";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { auth } from "@/lib/firebaseClient";
-import { postSession } from "@/lib/apiClient";
+// import { postSession } from "@/lib/apiClient";
 import Link from "next/link";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
