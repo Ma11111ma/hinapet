@@ -33,7 +33,7 @@ export default function UserRegisterForm({ initial, onSubmit }: Props) {
     setForm((f) => ({ ...f, ...initial }));
   }, [initial]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErr(null);
     setOk(false);
@@ -41,44 +41,77 @@ export default function UserRegisterForm({ initial, onSubmit }: Props) {
     try {
       await onSubmit(form);
       setOk(true);
-    } catch (e: any) {
-      setErr(e?.message ?? "送信に失敗しました");
+    } catch (e: unknown) {
+      // ✅ unknown でキャッチして、安全に判定
+      if (e instanceof Error) {
+        setErr(e.message);
+      } else {
+        setErr("送信に失敗しました");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const input = (k: keyof UserForm) => (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) =>
-    setForm({ ...form, [k]: e.target.value });
+  const input =
+    (k: keyof UserForm) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm({ ...form, [k]: e.target.value });
 
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
         <label className="block text-sm mb-1">氏名</label>
-        <input className="w-full border rounded px-3 py-2" value={form.full_name} onChange={input("full_name")} />
+        <input
+          className="w-full border rounded px-3 py-2"
+          value={form.full_name}
+          onChange={input("full_name")}
+        />
       </div>
       <div>
         <label className="block text-sm mb-1">電話番号</label>
-        <input className="w-full border rounded px-3 py-2" value={form.phone} onChange={input("phone")} />
+        <input
+          className="w-full border rounded px-3 py-2"
+          value={form.phone}
+          onChange={input("phone")}
+        />
       </div>
       <div>
         <label className="block text-sm mb-1">住所</label>
-        <input className="w-full border rounded px-3 py-2" value={form.address} onChange={input("address")} />
+        <input
+          className="w-full border rounded px-3 py-2"
+          value={form.address}
+          onChange={input("address")}
+        />
       </div>
       <div>
         <label className="block text-sm mb-1">緊急連絡先</label>
-        <input className="w-full border rounded px-3 py-2" value={form.emergency_contact} onChange={input("emergency_contact")} />
+        <input
+          className="w-full border rounded px-3 py-2"
+          value={form.emergency_contact}
+          onChange={input("emergency_contact")}
+        />
       </div>
       <div>
         <label className="block text-sm mb-1">メモ（アレルギー・持病等）</label>
-        <textarea className="w-full border rounded px-3 py-2" rows={3} value={form.memo} onChange={input("memo")} />
+        <textarea
+          className="w-full border rounded px-3 py-2"
+          rows={3}
+          value={form.memo}
+          onChange={input("memo")}
+        />
       </div>
 
       {form.email && (
         <p className="text-sm text-gray-500">サインイン中: {form.email}</p>
       )}
 
-      <button disabled={loading} className={`px-4 py-2 rounded text-white ${loading ? "bg-indigo-300" : "bg-indigo-600"}`}>
+      <button
+        disabled={loading}
+        className={`px-4 py-2 rounded text-white ${
+          loading ? "bg-indigo-300" : "bg-indigo-600"
+        }`}
+      >
         {loading ? "保存中…" : "保存する"}
       </button>
 

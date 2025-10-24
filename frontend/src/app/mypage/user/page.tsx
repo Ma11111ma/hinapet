@@ -5,8 +5,17 @@ import { auth } from "@/lib/firebaseClient";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
+type UserFormData = {
+  full_name?: string;
+  phone?: string;
+  address?: string;
+  emergency_contact?: string;
+  memo?: string;
+  email?: string;
+};
+
 export default function UserPage() {
-  const [initial, setInitial] = useState<any>(null);
+  const [initial, setInitial] = useState<UserFormData | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -39,7 +48,7 @@ export default function UserPage() {
     })();
   }, []);
 
-  const handleSubmit = async (form: any) => {
+  const handleSubmit = async (form: UserFormData): Promise<void> => {
     const u = auth.currentUser;
     if (!u) throw new Error("未ログインです");
     // ★ 送信時も同様に強制リフレッシュ＋401で一度だけ再試行

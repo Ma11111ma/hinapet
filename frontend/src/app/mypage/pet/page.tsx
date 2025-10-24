@@ -57,8 +57,13 @@ export default function PetListPage() {
 
         const data: Pet[] = await res.json();
         setPets(data ?? []);
-      } catch (e: any) {
-        setErr(e?.message ?? "読み込みに失敗しました");
+      } catch (e: unknown) {
+        // ✅ unknown型 → Error型チェックで安全に処理
+        if (e instanceof Error) {
+          setErr(e.message);
+        } else {
+          setErr("予期せぬエラーが発生しました");
+        }
       } finally {
         setLoading(false);
       }
@@ -69,7 +74,10 @@ export default function PetListPage() {
     <main className="max-w-4xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">ペット情報</h2>
-        <Link className="px-3 py-2 rounded bg-indigo-600 text-white" href="/mypage/pet/new">
+        <Link
+          className="px-3 py-2 rounded bg-indigo-600 text-white"
+          href="/mypage/pet/new"
+        >
           ＋ 新規登録
         </Link>
       </div>
@@ -88,7 +96,9 @@ export default function PetListPage() {
               </p>
             </li>
           ))}
-          {pets.length === 0 && <p className="text-gray-500">登録されたペットはいません</p>}
+          {pets.length === 0 && (
+            <p className="text-gray-500">登録されたペットはいません</p>
+          )}
         </ul>
       )}
     </main>
