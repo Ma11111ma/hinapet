@@ -1,26 +1,31 @@
-'use client';
+import Link from "next/link";
 
-import Link from 'next/link';
-
-type Props = {
-  searchParams: { session_id?: string };
-};
-
-export default function SuccessPage({ searchParams }: Props) {
-  const sessionId = searchParams.session_id ?? '(missing)';
+export default async function SuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
+  const params = await searchParams;
+  const sessionId = params?.session_id;
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>決済が完了しました 🎉</h1>
-      <p>Stripe の Checkout セッション ID: <code>{sessionId}</code></p>
+    <main className="p-8 text-center">
+      <h1 className="text-2xl font-bold text-green-600 mb-4">
+        決済が完了しました 🎉
+      </h1>
 
-      <p style={{ marginTop: 16 }}>
-        この画面が出れば <strong>バックエンド → Stripe → フロントのリダイレクト</strong> まで成功です。
-      </p>
+      {sessionId ? (
+        <p className="text-gray-700 mb-4">セッションID: {sessionId}</p>
+      ) : (
+        <p className="mb-4">セッションIDが見つかりません。</p>
+      )}
 
-      <div style={{ marginTop: 24 }}>
-        <Link href="/">トップへ戻る</Link>
-      </div>
+      <Link
+        href="/"
+        className="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+      >
+        トップページへ戻る
+      </Link>
     </main>
   );
 }
