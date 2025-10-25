@@ -11,7 +11,7 @@ export default async function SuccessPage({
   return (
     <main className="p-8 text-center">
       <h1 className="text-2xl font-bold text-green-600 mb-4">
-        決済が完了しました 🎉
+        決済が完了しました 🎉🎉🎉
       </h1>
 
       {sessionId ? (
