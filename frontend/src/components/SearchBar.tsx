@@ -1,53 +1,71 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 
 type Props = {
   onSearch: (keyword: string) => void;
-  onClear: () => void;
+  onClear?: () => void;
 };
 
 export default function SearchBar({ onSearch, onClear }: Props) {
   const [keyword, setKeyword] = useState("");
 
-  const handleSearch = () => onSearch(keyword);
-  const handleClear = () => {
-    setKeyword("");
-    onClear();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (keyword.trim()) onSearch(keyword.trim());
   };
 
   return (
-    <div className="flex items-center w-[92%] max-w-md mx-auto bg-white rounded-full shadow-md px-3 py-2 border border-gray-200">
-      {/* 📍 現在地アイコン（Google風） */}
-      <button
-        onClick={handleClear}
-        className="p-2 text-blue-500 hover:text-blue-700"
-        title="現在地を再取得"
-      >
-        <FaMapMarkerAlt className="w-4 h-4" />
-      </button>
+    <form
+      onSubmit={handleSubmit}
+      className="
+        relative flex items-center justify-between
+        bg-white shadow-md rounded-full
+        px-4 py-2
+        w-[90%] sm:w-[420px]
+        max-w-[420px]
+        transition
+      "
+      style={{ minWidth: "280px" }}
+    >
+      {/* ピンマーク */}
+      <FaMapMarkerAlt className="text-blue-500 text-lg mr-2 flex-shrink-0" />
 
-      {/* 🔍 検索入力 */}
+      {/* 入力欄 */}
       <input
         type="text"
         placeholder="避難所を検索"
         value={keyword}
-        onChange={(e: ChangeEvent<HTMLInputElement>) =>
-          setKeyword(e.target.value)
-        }
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        className="flex-1 bg-transparent px-2 text-gray-700 placeholder-gray-400 focus:outline-none"
+        onChange={(e) => setKeyword(e.target.value)}
+        className="
+          flex-grow bg-transparent outline-none text-stone-800 placeholder-stone-400
+          text-sm sm:text-base
+        "
       />
 
-      {/* 🔍 検索ボタン */}
+      {/* クリアボタン */}
+      {keyword && (
+        <button
+          type="button"
+          onClick={() => {
+            setKeyword("");
+            onClear?.();
+          }}
+          className="text-stone-400 hover:text-stone-600 text-sm mr-2 flex-shrink-0"
+        >
+          ✕
+        </button>
+      )}
+
+      {/* 検索ボタン */}
       <button
-        onClick={handleSearch}
-        className="p-2 text-gray-500 hover:text-gray-700"
-        title="検索"
+        type="submit"
+        aria-label="検索"
+        className="text-stone-600 hover:text-amber-600 flex-shrink-0"
       >
-        <FaSearch className="w-4 h-4" />
+        <FaSearch className="text-lg" />
       </button>
-    </div>
+    </form>
   );
 }

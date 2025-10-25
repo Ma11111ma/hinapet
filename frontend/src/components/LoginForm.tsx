@@ -31,8 +31,8 @@ const LoginForm: React.FC = () => {
       await postSession(idToken);
       console.log("✅ ログイン成功");
 
-      // ログイン成功で /profileTabs に遷移
-      router.push("/profileTabs");
+      // ログイン成功で マイページ に遷移
+      router.push("/mypage");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -54,8 +54,8 @@ const LoginForm: React.FC = () => {
       await postSession(idToken);
       console.log("✅ Googleログイン成功");
 
-      // ログイン成功で /profileTabs に遷移
-      router.push("/profileTabs");
+      // ログイン成功で マイページ に遷移
+      router.push("/mypage");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
