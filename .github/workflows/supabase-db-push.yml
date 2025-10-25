@@ -3,6 +3,8 @@ name: Supabase DB Push (main only)
 on:
   push:
     branches: [main]
+    paths:
+      - "supabase/migrations/**"
   workflow_dispatch:
 
 jobs:
@@ -10,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,22 +26,5 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-
-
-          CLEAN_URL="$(
-            printf %s "$SUPABASE_DB_URL" \
-              | tr -d '\r' | tr -d '\n' \
-              | sed 's/^ *//; s/ *$//' \
-              | sed 's/^"//; s/"$//'
-          )"
-
-
-          n_ctrl=$(printf %s "$SUPABASE_DB_URL" | LC_ALL=C tr -cd '[:cntrl:]' | wc -c | tr -d ' ')
-          echo "control-chars in secret (should be 0): $n_ctrl"
-          echo "host: $(echo "$CLEAN_URL" | sed -E 's#^postgresql://[^@]+@([^:/?]+).*#\1#')"
-
-
-          supabase --version
-
-
+          CLEAN_URL="$(printf %s "$SUPABASE_DB_URL" | tr -d '\r\n' | sed 's/^ *//; s/ *$//; s/^"//; s/"$//')"
           supabase --debug db push --db-url "$CLEAN_URL"
