@@ -53,12 +53,12 @@ export default function Header() {
 
           {/* 🔔 通知アイコン */}
           <Link
-            href="/profileTabs"
+            href="/mypage"
             className="relative flex items-center justify-center hover:text-[#F6A93A] transition"
           >
             <IoNotificationsOutline className="text-2xl text-[#8B4A18]" />
             <span className="absolute -top-1 -right-1 bg-[#F6A93A] text-white text-[10px] rounded-full px-[4px] py-[1px]">
-              3
+              1
             </span>
           </Link>
         </div>
