@@ -63,7 +63,7 @@ export default function PetNewPage() {
   //   }
   // };
   const router = useRouter();
-  const { data, reset } = usePetFormStore();
+  const { data, resetForm } = usePetFormStore();
 
   const handleSubmit = async () => {
     alert("入力内容を暗号化して保存しました。ページを閉じても復元されます。");
@@ -77,7 +77,7 @@ export default function PetNewPage() {
       <PetRegisterForm onSubmit={handleSubmit} /> {/* ✅ Props渡しOK */}
       <button
         onClick={() => {
-          reset();
+          resetForm();
           alert("入力内容を削除しました。");
         }}
         className="mt-4 bg-gray-300 text-black py-2 px-4 rounded"
