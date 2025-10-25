@@ -1,10 +1,9 @@
-//import { Inter } from "next/font/google";
-//import { Providers } from "./providers";
+// frontend/src/app/layout.tsx
 import React from "react";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "@/features/auth/AuthProvider";
 import "./globals.css";
 import Providers from "./providers";
+import Header from "@/components/Header";
 
 export default function RootLayout({
   children,
@@ -13,11 +12,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>
+      <body className="bg-amber-50 text-stone-800">
+        {/* ✅ 全ページ共通ヘッダー */}
+        <Header />
         <Providers>
-          {children}
+          {/* ✅ ページごとの内容（トップページ含む） */}
+          <main className="relative overflow-hidden">{children}</main>
 
-          {/* ✅ トースト通知コンテナをアプリ全体に配置 */}
+          {/* ✅ Toast通知 */}
           <Toaster
             position="top-right"
             toastOptions={{
