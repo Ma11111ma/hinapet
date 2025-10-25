@@ -48,8 +48,8 @@ const geocodeCurrentPosition = async (lat: number, lng: number) => {
 };
 
 const containerStyle = {
-  width: "100%",
-  height: "100%",
+  width: "100vw",
+  height: "100vh",
 };
 //=初期現在地=
 const DEFAULT_LOCATION = { lat: 35.3386, lng: 139.4916 }; // 藤沢市役所

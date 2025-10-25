@@ -4,14 +4,16 @@ import MapView from "@/components/MapView";
 
 export default function Page() {
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* ✅ 全面地図：ヘッダーとフッターを除いた完全フィット */}
-      <div className="absolute top-[56px] bottom-[56px] left-0 right-0 z-0">
+    <div className="relative w-full h-screen">
+      {/* ✅ 地図を全画面に固定表示（最背面） */}
+      <div className="fixed inset-0 z-0">
         <MapView />
       </div>
 
-      {/* ✅ 固定フッター */}
-      <FooterNav />
+      {/* ✅ フッターは地図の上にオーバーレイ */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <FooterNav />
+      </div>
     </div>
   );
 }

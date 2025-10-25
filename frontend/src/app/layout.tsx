@@ -17,7 +17,7 @@ export default function RootLayout({
         <Header />
         <Providers>
           {/* ✅ ページごとの内容（トップページ含む） */}
-          <main className="min-h-screen relative">{children}</main>
+          <main className="relative overflow-hidden">{children}</main>
 
           {/* ✅ Toast通知 */}
           <Toaster
