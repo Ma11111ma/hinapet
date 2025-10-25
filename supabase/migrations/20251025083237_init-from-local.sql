@@ -1,19 +1,15 @@
-create extension if not exists "fuzzystrmatch" with schema "public" version '1.1';
+create schema if not exists extensions;
 
-create extension if not exists "pg_trgm" with schema "public" version '1.6';
+create extension if not exists "fuzzystrmatch" with schema extensions;
+create extension if not exists "pg_trgm" with schema extensions;
+create extension if not exists "postgis" with schema extensions;
 
-create extension if not exists "postgis" with schema "public" version '3.4.3';
 
 create type "public"."billing_state" as enum ('none', 'active', 'past_due', 'canceled');
-
 create type "public"."news_level" as enum ('info', 'alert', 'emergency');
-
 create type "public"."news_status" as enum ('draft', 'published', 'archived');
-
 create type "public"."pet_species" as enum ('dog', 'cat', 'other');
-
 create type "public"."shelter_type" as enum ('companion', 'accompany');
-
 create type "public"."user_plan" as enum ('free', 'premium');
 
 create table "public"."alembic_version" (
