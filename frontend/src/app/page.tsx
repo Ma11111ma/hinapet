@@ -1,17 +1,12 @@
 "use client";
-
-import Header from "@/components/Header";
 import FooterNav from "@/components/FooterNav";
 import MapView from "@/components/MapView";
 
 export default function Page() {
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* ✅ 固定ヘッダー */}
-      <Header />
-
-      {/* ✅ 全面地図（固定表示） */}
-      <div className="absolute top-[56px] bottom-[56px] left-0 right-0">
+      {/* ✅ 全面地図：ヘッダーとフッターを除いた完全フィット */}
+      <div className="absolute top-[56px] bottom-[56px] left-0 right-0 z-0">
         <MapView />
       </div>
 

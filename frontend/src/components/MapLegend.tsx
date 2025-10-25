@@ -2,13 +2,20 @@
 
 export default function MapLegend() {
   const items = [
-    { color: "bg-blue-500", label: "同行避難（accompany）" },
-    { color: "bg-green-500", label: "同伴避難（companion）" },
+    { color: "bg-blue-500", label: "同行避難（ペットは別スペース）" },
+    { color: "bg-green-500", label: "同伴避難（ペットも居住地に一緒に避難）" },
   ];
 
   return (
-    <div className="absolute bottom-4 left-4 bg-white/90 rounded-lg p-3 shadow-md text-sm">
-      <strong className="block mb-1">避難種別</strong>
+    <div
+      className="
+        fixed bottom-[56px] left-4 z-40
+        bg-white/95 border border-gray-200 shadow-md
+        rounded-lg px-5 py-3
+        text-sm w-[70%] max-w-[420px]
+      "
+    >
+      <strong className="block mb-1 text-gray-800">避難種別</strong>
       <ul className="space-y-1">
         {items.map((item) => (
           <li key={item.label} className="flex items-center gap-2">

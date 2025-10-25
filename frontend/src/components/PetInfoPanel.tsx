@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import PetRegisterForm from "@/components/PetRegisterForm";
+import { PetForm } from "../components/PetRegisterForm";
 
 /** 🐾 チェックリスト項目型 */
 type ChecklistItem = {
@@ -27,7 +28,7 @@ type PetData = {
   photoUrl?: string;
 };
 
-export default function PetPage() {
+export default function PetInfoPanel() {
   const [pets, setPets] = useState<PetData[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -36,7 +37,11 @@ export default function PetPage() {
   useEffect(() => {
     const savedPets = localStorage.getItem("pets");
     if (savedPets) {
-      setPets(JSON.parse(savedPets));
+      try {
+        setPets(JSON.parse(savedPets));
+      } catch {
+        console.warn("ペット情報の読み込みに失敗しました");
+      }
     }
   }, []);
 
@@ -55,7 +60,7 @@ export default function PetPage() {
     savePets([...pets, newPet]);
   };
 
-  /** ✅ ペット更新（名前など） */
+  /** ✅ ペット更新（フォームから受け取る） */
   const updatePet = (id: string, updated: Partial<PetData>) => {
     const newList = pets.map((p) => (p.id === id ? { ...p, ...updated } : p));
     savePets(newList);
@@ -121,8 +126,8 @@ export default function PetPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto py-6 px-4 bg-amber-50 min-h-screen text-stone-800">
-      <h1 className="text-2xl font-bold mb-6">🐾 ペット情報一覧</h1>
+    <div className="py-4 text-stone-800 overflow-y-auto min-h-screen">
+      <h1 className="text-xl font-bold mb-4">🐾 ペット情報一覧</h1>
 
       {/* ペット一覧 */}
       <div className="space-y-4">
@@ -136,7 +141,7 @@ export default function PetPage() {
               onClick={() => setExpanded(expanded === p.id ? null : p.id)}
               className="flex justify-between items-center w-full px-4 py-3 text-left font-semibold bg-amber-100 hover:bg-amber-200 transition cursor-pointer border-b border-stone-200"
             >
-              <span>{p.name}</span>
+              <span>{p.name || "名前未設定"}</span>
               <div className="flex items-center gap-2">
                 <div
                   onClick={(e) => {
@@ -157,7 +162,9 @@ export default function PetPage() {
             {expanded === p.id && (
               <div className="p-4 bg-amber-50">
                 <PetRegisterForm
-                  onSubmit={async () => {
+                  defaultValues={p}
+                  onSubmit={async (updatedData: PetForm) => {
+                    updatePet(p.id, updatedData);
                     alert("ペット情報を保存しました！");
                   }}
                 />
@@ -200,16 +207,10 @@ export default function PetPage() {
         </button>
 
         <div
-          className={`relative transition-all duration-500 ease-in-out overflow-hidden ${
-            expanded === "checklist"
-              ? "max-h-[2000px] mt-4"
-              : "max-h-[150px] mt-2"
+          className={`transition-all duration-500 ease-in-out ${
+            expanded === "checklist" ? "mt-4" : "mt-2"
           }`}
         >
-          {expanded !== "checklist" && (
-            <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-amber-50 via-white/70 to-transparent pointer-events-none rounded-b-2xl" />
-          )}
-
           <ul className="space-y-3">
             {checklist.map((item) => (
               <li
@@ -263,6 +264,6 @@ export default function PetPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -27,8 +27,8 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-[#FFF3D9] shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="mx-auto max-w-screen-lg flex items-center justify-between px-4 py-2">
+    <header className="sticky top-0 z-30 w-full bg-[#FFF3D9] h-14 shadow-sm transition-shadow duration-200">
+      <div className="mx-auto max-w-screen-lg flex items-center justify-between px-4 h-full">
         {/* 🐾 ロゴ部分 */}
         <Link
           href="/"

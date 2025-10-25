@@ -4,8 +4,23 @@ import { FormEvent } from "react";
 import Image from "next/image";
 import { usePetFormStore } from "@/store/petFormStore";
 
+export type PetForm = {
+  name: string;
+  gender?: "男の子" | "女の子";
+  birthdate?: string;
+  neutered?: "未" | "済";
+  species?: "犬" | "猫" | "その他";
+  speciesOther?: string;
+  clinicName?: string;
+  history?: string;
+  medication?: string;
+  memo?: string;
+  photoUrl?: string;
+};
+
 type Props = {
-  onSubmit: () => Promise<void>;
+  onSubmit: (data: PetForm) => Promise<void>;
+  defaultValues?: PetForm;
 };
 
 export default function PetRegisterForm({ onSubmit }: Props) {
@@ -13,7 +28,7 @@ export default function PetRegisterForm({ onSubmit }: Props) {
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSubmit(); // ✅ /mypage/pet/new/page.tsx で定義した保存処理を呼び出す
+    await onSubmit(f);
   };
 
   return (
