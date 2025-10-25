@@ -2,20 +2,30 @@ name: Supabase DB Push (main only)
 
 on:
   push:
+    branches: [main]
     paths:
       - "supabase/migrations/**"
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   push:
     runs-on: ubuntu-latest
+    concurrency:
+      group: supabase-db-push-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
         with:
-          node-version: "20"
-      - run: npm i -g supabase@latest
+          version: latest
+
       - name: Supabase DB Push
-        run: supabase db push --db-url "${{ secrets.SUPABASE_DB_URL }}"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: supabase db push --db-url "$SUPABASE_DB_URL"
