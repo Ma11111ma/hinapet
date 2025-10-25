@@ -1,0 +1,30 @@
+name: Supabase DB Push (main only)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase DB Push
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          CLEAN_URL="$(printf %s "$SUPABASE_DB_URL" | tr -d '\r\n' | sed 's/^ *//; s/ *$//; s/^"//; s/"$//')"
+          supabase --debug db push --db-url "$CLEAN_URL"
