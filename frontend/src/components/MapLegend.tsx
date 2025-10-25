@@ -9,8 +9,9 @@ export default function MapLegend() {
   return (
     <div
       className="
-        fixed bottom-[56px] left-4 z-40
-        bg-white/95 border border-gray-200 shadow-md
+         fixed left-4 z-40
+       bottom-[84px] md:bottom-[96px]
+       bg-white/95 border border-gray-200 shadow-md backdrop-blur
         rounded-lg px-5 py-3
         text-sm w-[70%] max-w-[420px]
       "

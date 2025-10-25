@@ -119,7 +119,6 @@ export default function UserRegisterForm({ initial, onSubmit }: Props) {
         />
       </div>
 
-      {/* ★新規追加：メールアドレス（表示用） */}
       <div>
         <label className="block text-sm mb-1 text-stone-700">
           メールアドレス

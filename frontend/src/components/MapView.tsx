@@ -46,11 +46,10 @@ const geocodeCurrentPosition = async (lat: number, lng: number) => {
     return "位置情報エラー";
   }
 };
-const HEADER_HEIGHT = 56; // ヘッダー高さ(px)
-const FOOTER_HEIGHT = 56; // フッター高さ(px)
+
 const containerStyle = {
-  width: "100vw",
-  height: `calc(100vh - ${HEADER_HEIGHT}px - ${FOOTER_HEIGHT}px)`,
+  width: "100%",
+  height: "100%",
 };
 //=初期現在地=
 const DEFAULT_LOCATION = { lat: 35.3386, lng: 139.4916 }; // 藤沢市役所
@@ -198,7 +197,7 @@ export default function MapView() {
 
   //==ルート描画==
   return (
-    <div className="relative w-screen max-w-none overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden">
       {(isLocating || distLoading) && <LoadingSpinner />}
       {geoError && (
         <div className="absolute top-24 left-4 bg-red-100 text-red-700 p-2 rounded shadow">
@@ -206,7 +205,7 @@ export default function MapView() {
         </div>
       )}
       {/* 🔍 検索・フィルターUI */}
-      <div className="fixed top-[60px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+      <div className="fixed top-[56px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
         {/* 検索バー */}
         <div className="pointer-events-auto">
           <SearchBar onSearch={handleSearch} onClear={handleClear} />
