@@ -30,7 +30,7 @@ export default function UserRegisterForm({ initial, onSubmit }: Props) {
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
-    setForm((f) => ({ ...f, ...initial }));
+    if (initial) setForm((f) => ({ ...f, ...initial }));
   }, [initial]);
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,7 +42,6 @@ export default function UserRegisterForm({ initial, onSubmit }: Props) {
       await onSubmit(form);
       setOk(true);
     } catch (e: unknown) {
-      // ✅ unknown でキャッチして、安全に判定
       if (e instanceof Error) {
         setErr(e.message);
       } else {
@@ -59,64 +58,96 @@ export default function UserRegisterForm({ initial, onSubmit }: Props) {
       setForm({ ...form, [k]: e.target.value });
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    // ★変更: トンマナをペット情報と完全統一（背景 + 影 + 角丸）
+    <form
+      onSubmit={submit}
+      className="space-y-5 bg-amber-50 p-5 rounded-2xl shadow-sm border border-stone-200"
+    >
+      <h2 className="text-lg font-bold text-stone-800 mb-2">ユーザー情報</h2>
+
+      {/* 氏名 */}
       <div>
-        <label className="block text-sm mb-1">氏名</label>
+        <label className="block text-sm mb-1 text-stone-700">氏名</label>
         <input
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-stone-300 rounded px-3 py-2 bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
           value={form.full_name}
           onChange={input("full_name")}
         />
       </div>
+
+      {/* 電話番号 */}
       <div>
-        <label className="block text-sm mb-1">電話番号</label>
+        <label className="block text-sm mb-1 text-stone-700">電話番号</label>
         <input
-          className="w-full border rounded px-3 py-2"
+          type="tel"
+          className="w-full border border-stone-300 rounded px-3 py-2 bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
           value={form.phone}
           onChange={input("phone")}
         />
       </div>
+
+      {/* 住所 */}
       <div>
-        <label className="block text-sm mb-1">住所</label>
+        <label className="block text-sm mb-1 text-stone-700">住所</label>
         <input
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-stone-300 rounded px-3 py-2 bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
           value={form.address}
           onChange={input("address")}
         />
       </div>
+
+      {/* 緊急連絡先 */}
       <div>
-        <label className="block text-sm mb-1">緊急連絡先</label>
+        <label className="block text-sm mb-1 text-stone-700">緊急連絡先</label>
         <input
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-stone-300 rounded px-3 py-2 bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
           value={form.emergency_contact}
           onChange={input("emergency_contact")}
         />
       </div>
+
+      {/* メモ */}
       <div>
-        <label className="block text-sm mb-1">メモ（アレルギー・持病等）</label>
+        <label className="block text-sm mb-1 text-stone-700">
+          メモ（アレルギー・持病等）
+        </label>
         <textarea
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-stone-300 rounded px-3 py-2 bg-white focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition"
           rows={3}
           value={form.memo}
           onChange={input("memo")}
         />
       </div>
 
-      {form.email && (
-        <p className="text-sm text-gray-500">サインイン中: {form.email}</p>
-      )}
+      {/* ★新規追加：メールアドレス（表示用） */}
+      <div>
+        <label className="block text-sm mb-1 text-stone-700">
+          メールアドレス
+        </label>
+        <input
+          type="email"
+          readOnly
+          className="w-full border border-stone-300 rounded px-3 py-2 bg-stone-100 text-stone-700 cursor-not-allowed"
+          value={form.email ?? ""}
+          placeholder="サインイン中のメールアドレス"
+        />
+      </div>
 
+      {/* ★変更: amber系の保存ボタンに変更 */}
       <button
         disabled={loading}
-        className={`px-4 py-2 rounded text-white ${
-          loading ? "bg-indigo-300" : "bg-indigo-600"
+        className={`w-full py-2 rounded-md text-white font-medium shadow-sm transition ${
+          loading
+            ? "bg-amber-300 cursor-not-allowed"
+            : "bg-amber-500 hover:bg-amber-600"
         }`}
       >
         {loading ? "保存中…" : "保存する"}
       </button>
 
-      {ok && <p className="text-green-600">保存しました</p>}
-      {err && <p className="text-red-600">エラー: {err}</p>}
+      {/* メッセージ */}
+      {ok && <p className="text-green-600 text-sm">保存しました</p>}
+      {err && <p className="text-red-600 text-sm">エラー: {err}</p>}
     </form>
   );
 }

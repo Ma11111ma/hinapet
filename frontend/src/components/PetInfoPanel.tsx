@@ -126,7 +126,7 @@ export default function PetInfoPanel() {
   };
 
   return (
-    <div className="py-4 text-stone-800 overflow-y-auto min-h-screen">
+    <div className="py-4 text-stone-800 min-h-full">
       <h1 className="text-xl font-bold mb-4">🐾 ペット情報一覧</h1>
 
       {/* ペット一覧 */}
