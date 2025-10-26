@@ -1,4 +1,5 @@
 // frontend/src/app/layout.tsx
+"use client";
 import React from "react";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
