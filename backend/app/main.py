@@ -112,6 +112,7 @@ app.include_router(family.router)
 app.include_router(checklists.router)
 app.include_router(news.router)
 app.include_router(auth.router)
+app.include_router(stripe_webhook.router)
 
 # (6) ヘルスチェック
 @app.get("/system/health", tags=["admin"], summary="ヘルスチェック")
