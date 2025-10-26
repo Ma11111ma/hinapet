@@ -41,7 +41,7 @@ export default function FooterNav() {
 
       {/* 🐶 ペット */}
       <Link
-        href="/mypage/pet"
+        href="/mypage?tab=pet"
         className="flex flex-col items-center text-[#8B4A18] hover:text-[#F6A93A] transition"
       >
         <FaDog size={22} />

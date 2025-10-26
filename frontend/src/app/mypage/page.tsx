@@ -1,27 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { useSearchParams } from "next/navigation";
 import UserInfoForm from "../../components/UserInfoForm";
 import PetInfoPanel from "../../components/PetInfoPanel";
 import FooterNav from "@/components/FooterNav";
 
-// ヘッダー/フッターの高さ（px）
 const HEADER = 56;
 const FOOTER = 56;
 
 export default function MyPage() {
-  const [activeTab, setActiveTab] = useState<"user" | "pet">("user");
+  const { user, initialized } = useAuth();
+  const searchParams = useSearchParams();
 
+  // 🔍 URLパラメータから初期タブを決定
+  const initialTab = searchParams.get("tab") === "pet" ? "pet" : "user";
+  const [activeTab, setActiveTab] = useState<"user" | "pet">(initialTab);
+
+  // URLが変わったときにタブを再設定（例: /mypage?tab=pet）
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "pet" || tab === "user") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  // 🔹未ログイン時のメッセージ
+  if (initialized && !user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-center text-stone-700 bg-amber-50">
+        <h2 className="text-lg font-semibold mb-2">
+          マイページのご利用にはログインが必要です
+        </h2>
+        <p className="text-sm text-stone-500">
+          ログインすると、ユーザー情報やペット情報の登録ができます。
+        </p>
+        <FooterNav />
+      </div>
+    );
+  }
+
+  // 🔹ログイン済み時の通常表示
   return (
     <div className="relative w-screen">
-      {/* ▼ ヘッダーは layout.tsx 側の <Header />（固定）を使用 */}
-
-      {/* ▼ スクロール可能なページ本体：ヘッダー〜フッターの間を占有 */}
       <div
         className="fixed left-0 right-0 overflow-y-auto bg-amber-50 text-stone-800"
         style={{ top: HEADER, bottom: FOOTER }}
       >
-        {/* タブヘッダー（スクロール領域の中に配置。上部に常に見せたいなら sticky） */}
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
           <div className="mx-auto max-w-md flex">
             <button
@@ -47,17 +73,14 @@ export default function MyPage() {
           </div>
         </div>
 
-        {/* コンテンツ */}
         <div className="mx-auto max-w-md p-4">
           {activeTab === "user" && <UserInfoForm />}
           {activeTab === "pet" && <PetInfoPanel />}
         </div>
 
-        {/* スクロール末尾でフッターに飲み込まれないように余白を少し */}
         <div className="h-3" />
       </div>
 
-      {/* ▼ 固定フッター */}
       <FooterNav />
     </div>
   );

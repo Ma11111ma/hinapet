@@ -81,7 +81,7 @@ export default function UserInfoForm() {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-200">
+    <div className="bg-amber-100 rounded-2xl p-5 shadow-sm border border-stone-200">
       <UserRegisterForm initial={formData ?? {}} onSubmit={handleSave} />
     </div>
   );
