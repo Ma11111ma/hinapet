@@ -27,8 +27,8 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-[#FFF3D9] shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="mx-auto max-w-screen-lg flex items-center justify-between px-4 py-2">
+    <header className="sticky top-0 z-30 w-full bg-[#FFF3D9] h-14 shadow-sm transition-shadow duration-200">
+      <div className="mx-auto max-w-screen-lg flex items-center justify-between px-4 h-full">
         {/* 🐾 ロゴ部分 */}
         <Link
           href="/"
@@ -53,12 +53,12 @@ export default function Header() {
 
           {/* 🔔 通知アイコン */}
           <Link
-            href="/profileTabs"
+            href="/mypage"
             className="relative flex items-center justify-center hover:text-[#F6A93A] transition"
           >
             <IoNotificationsOutline className="text-2xl text-[#8B4A18]" />
             <span className="absolute -top-1 -right-1 bg-[#F6A93A] text-white text-[10px] rounded-full px-[4px] py-[1px]">
-              3
+              1
             </span>
           </Link>
         </div>

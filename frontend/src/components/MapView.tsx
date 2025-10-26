@@ -47,7 +47,11 @@ const geocodeCurrentPosition = async (lat: number, lng: number) => {
   }
 };
 
-const containerStyle = { width: "100vw", height: "calc(100vh - 64px - 56px)" };
+const containerStyle = {
+  width: "100vw",
+  height: "100vh",
+};
+//=初期現在地=
 const DEFAULT_LOCATION = { lat: 35.3386, lng: 139.4916 }; // 藤沢市役所
 const DEFAULT_LOCATION_LABEL = "藤沢市役所";
 
@@ -124,7 +128,34 @@ export default function MapView() {
     }
   }, [currentPosition, shelters, calculate]);
 
-  const handleSearch = (kw: string) => setKeyword(kw);
+  const handleSearch = (kw: string) => {
+    setKeyword(kw);
+    // shelter名または住所に部分一致するものを探す
+    const hit = shelters.find(
+      (s) => s.name.includes(kw) || s.address.includes(kw)
+    );
+
+    // ヒットしたらその位置にフォーカス
+    if (hit && mapRef.current) {
+      mapRef.current.panTo({ lat: hit.lat, lng: hit.lng });
+      mapRef.current.setZoom(15);
+      setSelectedShelter(hit);
+    } else if (typeof google !== "undefined" && google.maps) {
+      // 近辺の地名検索
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: `藤沢市 ${kw}` }, (results, status) => {
+        if (status === "OK" && results && results[0]) {
+          const loc = results[0].geometry.location;
+          const newCenter = { lat: loc.lat(), lng: loc.lng() };
+          mapRef.current?.panTo(newCenter);
+          mapRef.current?.setZoom(14);
+        } else {
+          console.warn("該当する場所が見つかりません:", status);
+        }
+      });
+    }
+  };
+
   const handleClear = () => {
     setKeyword("");
     setSelectedType(null);
@@ -193,7 +224,7 @@ export default function MapView() {
 
   //==ルート描画==
   return (
-    <div className="relative">
+    <div className="relative w-full h-full overflow-hidden">
       {(isLocating || distLoading) && <LoadingSpinner />}
       {geoError && (
         <div className="absolute top-24 left-4 bg-red-100 text-red-700 p-2 rounded shadow">
@@ -201,7 +232,7 @@ export default function MapView() {
         </div>
       )}
       {/* 🔍 検索・フィルターUI */}
-      <div className="fixed top-[60px] left-0 w-full z-50 flex flex-col items-center pointer-events-none">
+      <div className="fixed top-[72px] left-0 w-full z-50 flex flex-col items-center pointer-events-none space-y-2">
         {/* 検索バー */}
         <div className="pointer-events-auto">
           <SearchBar onSearch={handleSearch} onClear={handleClear} />
@@ -229,7 +260,7 @@ export default function MapView() {
               mapRef.current = map;
             }}
             options={{
-              mapTypeControl: false, // ✅ ← 「地図｜航空写真」ボタン削除
+              mapTypeControl: false,
               streetViewControl: false,
               fullscreenControl: false,
               zoomControl: true,

@@ -9,13 +9,13 @@ import { useRouter } from "next/navigation";
 type Props = {
   email: string;
   password: string;
-  redirectPath?: string; // ✅ 成功時の遷移先（省略時は /profileTabs）
+  redirectPath?: string; // ✅ 成功時の遷移先（省略時は /mypage）
 };
 
 export const RegisterButton: React.FC<Props> = ({
   email,
   password,
-  redirectPath = "/profileTabs",
+  redirectPath = "/mypage",
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

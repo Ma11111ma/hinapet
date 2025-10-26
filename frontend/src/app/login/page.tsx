@@ -34,7 +34,7 @@ export default function LoginPage() {
     try {
       const result = await signInWithEmail(email, password);
       if (result?.user) {
-        router.replace("/profileTabs"); // 成功時に /profileTabs へ遷移
+        router.replace("/mypage"); // 成功時にマイページへ遷移
       } else {
         setError("メールアドレスまたはパスワードが正しくありません。");
       }
@@ -54,7 +54,7 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
-        router.replace("/profileTabs"); // 成功時に /profileTabs へ遷移
+        router.replace("/mypage"); // 成功時にマイページ へ遷移
       } else {
         setError("Google認証に失敗しました。");
       }

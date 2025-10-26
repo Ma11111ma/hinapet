@@ -12,14 +12,34 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 # 🔧 Firebase Admin SDK の初期化（まだの場合のみ）
 # ---------------------------------------------
 if not firebase_admin._apps:
+    import json
+    import base64
+
+    # ✅ Railway（環境変数）とローカル（ファイル）両対応
+    cred_json_base64 = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
     cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    if cred_path and os.path.exists(cred_path):
+
+    if cred_json_base64:
+        # Base64 文字列をデコードして JSON として読み込む
+        try:
+            cred_json = base64.b64decode(cred_json_base64).decode()
+            cred_dict = json.loads(cred_json)
+            cred = credentials.Certificate(cred_dict)
+            initialize_app(cred)
+            print("✅ Firebase Admin SDK initialized from environment JSON")
+        except Exception as e:
+            raise RuntimeError(f"❌ GOOGLE_APPLICATION_CREDENTIALS_JSON の読み込みに失敗しました: {e}")
+
+    elif cred_path and os.path.exists(cred_path):
+        # ローカル用（.envでパス指定）
         cred = credentials.Certificate(cred_path)
         initialize_app(cred)
-        print("✅ Firebase Admin SDK initialized")
+        print("✅ Firebase Admin SDK initialized from local file")
+
     else:
         raise RuntimeError(
-            "❌ GOOGLE_APPLICATION_CREDENTIALS が設定されていないか、パスが間違っています。"
+            "❌ Firebase Admin SDK の認証情報が設定されていません。"
+            "Railwayでは GOOGLE_APPLICATION_CREDENTIALS_JSON を設定してください。"
         )
 
 # ---------------------------------------------

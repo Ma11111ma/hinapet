@@ -6,7 +6,7 @@ export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
 
   // 認証必須ページ（今回は /dashboard を守る）
-  const protectedPaths = ["/dashboard"];
+  const protectedPaths = ["/mypage"];
 
   if (protectedPaths.some((path) => url.pathname.startsWith(path))) {
     if (!token) {
@@ -19,5 +19,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"], // 必要に応じて増やす
+  matcher: ["/mypage/:path*"], // 必要に応じて増やす
 };
