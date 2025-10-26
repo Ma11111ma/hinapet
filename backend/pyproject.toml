@@ -1,6 +1,6 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --no-cov" 
+addopts = "--cov=app --cov-report=term-missing --cov-fail-under=80 -q"
 asyncio_mode = "auto"
 filterwarnings = [
   "ignore::DeprecationWarning",
