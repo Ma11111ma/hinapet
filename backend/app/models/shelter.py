@@ -1,6 +1,6 @@
 import enum, uuid
-from sqlalchemy import Column, String, Integer, Boolean, Text, Date, Float, Enum as SAEnum, text
-from sqlalchemy import Enum as SqlEnum
+from sqlalchemy import Column, String, Integer, Boolean, Text, Date, text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from geoalchemy2 import Geography
 from app.db.base_class import Base
@@ -23,10 +23,16 @@ class Shelter(Base):
     phone = Column(Text, nullable=True)
     website_url = Column(Text, nullable=True)
 
+    # 種別は Enum（PostgreSQL enum）
     type = Column(SAEnum(ShelterType, name="shelter_type"), nullable=False)
+
     capacity = Column(Integer, server_default=text("0"))
+
+    # 位置情報は lat/lng 列ではなく geom(Geography(Point,4326)) に保持
     geom = Column(Geography(geometry_type="POINT", srid=4326), nullable=False)
-    crowd_level = Column(SqlEnum(CrowdLevel), nullable=True, default=CrowdLevel.empty)
+
+    # 混雑度は Enum（Text での二重定義は削除）
+    crowd_level = Column(SAEnum(CrowdLevel, name="crowd_level"), nullable=True, default=CrowdLevel.empty)
 
     # PDF由来
     is_emergency_flood = Column(Boolean, server_default=text("false"))
@@ -52,6 +58,3 @@ class Shelter(Base):
 
     created_at = Column(String, server_default=text("now()"))
     updated_at = Column(String, server_default=text("now()"))
-
-    # ✅ ここを追加
-    crowd_level = Column(Text, nullable=True)

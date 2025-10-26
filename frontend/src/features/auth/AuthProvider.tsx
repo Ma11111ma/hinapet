@@ -26,6 +26,13 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// ✅ useAuth をここで export（最上位・コンポーネントの外）
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<(User & { is_premium?: boolean }) | null>(
     null
@@ -37,28 +44,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          // Firebaseトークンを取得して /users/me に問い合わせ
           const token = await firebaseUser.getIdToken();
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/me`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
               credentials: "include",
             }
           );
-
           if (res.ok) {
             const serverUser = await res.json();
-            // FastAPIのis_premiumを統合
             setUser(
               Object.assign(firebaseUser, {
                 is_premium: serverUser?.is_premium ?? false,
               })
             );
           } else {
-            // バックエンド未接続でもFirebase情報だけ維持
             setUser({ ...firebaseUser, is_premium: false });
           }
         } catch (error) {
@@ -96,12 +97,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signInWithGoogle,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// ✅ useAuth をここで一緒にエクスポート
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
+  return (
+    <AuthContext.Provider value={value}>
+      {initialized ? (
+        children
+      ) : (
+        <div className="text-center py-10 text-stone-500 text-sm">
+          認証情報を読み込んでいます...
+        </div>
+      )}
+    </AuthContext.Provider>
+  );
 };

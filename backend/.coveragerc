@@ -1,0 +1,19 @@
+[run]
+branch = True
+source = app
+omit =
+    # ツール・スクリプト類（本番APIの動作に無関係）
+    app/scripts/*
+    app/db/seed_shelters.py
+    app/scripts/extract_fujisawa_pdf.py
+    app/scripts/geocode_fujisawa_csv.py
+    app/scripts/grant_admin_claim.py
+
+    # レガシー（未使用）
+    app/crud/_legacy_*.py
+    app/models/_legacy_*.py
+    app/schemas/_legacy_*.py
+
+    # 管理・運用向けで今は未使用のもの（必要なら後で戻す）
+    app/routers/stripe_webhook.py
+    app/models/audit_log.py
