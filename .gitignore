@@ -31,14 +31,9 @@ backend/app/firebase-admin-key.json
 
 # firebase json file
 backend/secrets
+backend/.env.production
+frontend/.env.production
 
-
-# Frontend env files
-/frontend/.env.local
-/frontend/.env.production
-
-# Backend env file
-/backend/.env
-/backend/.env.production
-/backend/secrets/*.json
-
+# Coverage reports
+.coverage
+htmlcov/

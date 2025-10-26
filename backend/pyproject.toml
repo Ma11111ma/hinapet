@@ -1,0 +1,14 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = """
+-vv -s
+--cov=app
+--cov-report=term-missing
+--cov-config=.coveragerc
+--cov-fail-under=80
+"""
+asyncio_mode = "auto"
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
+
