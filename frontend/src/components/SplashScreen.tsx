@@ -48,7 +48,7 @@ export default function SplashScreen({ onFinish }: Props) {
           className="transition-transform duration-1000 ease-in-out scale-100"
         />
         <Image
-          src="/assets/犬のフリーアイコン.png"
+          src="/assets/ねこのアイコン.png"
           alt="猫のイラスト"
           width={90}
           height={90}
