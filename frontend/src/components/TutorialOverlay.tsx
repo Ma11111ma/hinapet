@@ -15,7 +15,9 @@ type Props = {
  * - 地図は透けるが、検索窓や他ボタンは暗く見える
  */
 export default function TutorialOverlay({ onFinish, positions }: Props) {
-  const [step, setStep] = useState<"accompany" | "companion">("accompany");
+  // 3段階ステップ：intro → accompany → companion
+  type Step = "intro" | "accompany" | "companion";
+  const [step, setStep] = useState<Step>("intro");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -23,12 +25,16 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
   }, []);
 
   const goNext = () => {
-    if (step === "accompany") setStep("companion");
+    if (step === "intro") setStep("accompany");
+    else if (step === "accompany") setStep("companion");
     else onFinish();
   };
 
+  // Intro時はフォーカスを同行ボタンに合わせる
   const focusRect =
-    step === "accompany" ? positions?.accompany : positions?.companion;
+    step === "intro" || step === "accompany"
+      ? positions?.accompany
+      : positions?.companion;
 
   if (!focusRect) return null;
 
@@ -39,17 +45,16 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
       }`}
       style={{ pointerEvents: "none" }}
     >
-      {/* === 暗幕（まず全体を暗く覆う） === */}
+      {/* === 暗幕 === */}
       <div className="absolute inset-0 bg-black/70 z-[1]" />
 
-      {/* === 切り抜きエリア（フォーカスボタンを明るく残す） === */}
+      {/* === フォーカス切り抜き === */}
       <svg
         className="absolute inset-0 z-[2] pointer-events-none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
           <mask id="focusMask">
-            {/* 黒＝非表示（暗い部分）・白＝見せる部分 */}
             <rect width="100%" height="100%" fill="black" />
             <rect
               x={focusRect.left}
@@ -62,7 +67,6 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
             />
           </mask>
         </defs>
-        {/* 背景全体にマスクを適用し、フォーカス部分のみ透過 */}
         <rect
           width="100%"
           height="100%"
@@ -71,7 +75,7 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
         />
       </svg>
 
-      {/* === フォーカス枠（カラー強調） === */}
+      {/* === ボタン枠 === */}
       <div
         className="absolute z-[3] rounded-full pointer-events-none"
         style={{
@@ -80,26 +84,40 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
           width: `${focusRect.width + 4}px`,
           height: `${focusRect.height + 4}px`,
           borderRadius: "9999px",
-          border: `2px solid ${step === "accompany" ? "#3B82F6" : "#22C55E"}`,
+          border: `2px solid ${
+            step === "companion"
+              ? "#22C55E"
+              : step === "accompany"
+              ? "#3B82F6"
+              : "#3B82F6"
+          }`,
           boxShadow: `0 0 15px ${
-            step === "accompany" ? "#3B82F6" : "#22C55E"
+            step === "companion"
+              ? "#22C55E"
+              : step === "accompany"
+              ? "#3B82F6"
+              : "#3B82F6"
           }80`,
           transition: "all 0.3s ease",
         }}
       />
 
-      {/* === テキストカード === */}
+      {/* === 白パネル === */}
       <div className="absolute bottom-[240px] w-full flex justify-center pointer-events-auto z-[4]">
         <div className="w-[85%] max-w-sm bg-white rounded-2xl shadow-xl p-5 text-center">
-          {step === "accompany" ? (
+          {step === "intro" && (
             <>
-              <h2 className="text-lg font-semibold text-stone-800 mb-2">
-                同行避難とは？
+              <h2 className="text-lg font-bold text-[#8B4A18] mb-2">
+                ひなペットとは？
               </h2>
-              <p className="text-stone-600 text-sm mb-4 leading-relaxed">
-                飼い主とペットが一緒に建物内で避難できる避難所のことです。
+              <p className="font-semibold text-stone-600 text-m mb-4 leading-relaxed">
+                ひなペットは災害時のペット避難を
                 <br />
-                ペットと同じ空間で過ごせます。
+                サポートする地図アプリです🐾
+                <br />
+                ペットを連れて行ける近くの避難所を
+                <br />
+                地図でパッと探せます。
               </p>
               <button
                 onClick={goNext}
@@ -108,15 +126,35 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
                 次へ
               </button>
             </>
-          ) : (
+          )}
+
+          {step === "accompany" && (
+            <>
+              <h2 className="text-lg font-semibold  text-stone-800 mb-2">
+                同行避難とは？
+              </h2>
+              <p className="text-stone-600 text-sm mb-4 leading-relaxed">
+                飼い主とペットが一緒に避難しますが、
+                建物内ではなく屋外や別室などにペットを預ける避難形態です。
+              </p>
+              <button
+                onClick={goNext}
+                className="px-6 py-2 bg-[#3B82F6] text-white rounded-lg shadow hover:bg-[#2563EB] transition-colors"
+              >
+                次へ
+              </button>
+            </>
+          )}
+
+          {step === "companion" && (
             <>
               <h2 className="text-lg font-semibold text-stone-800 mb-2">
                 同伴避難とは？
               </h2>
               <p className="text-stone-600 text-sm mb-4 leading-relaxed">
-                飼い主とペットが一緒に避難しますが、建物内ではなく
+                飼い主とペットが一緒に建物内で避難できる避難所のことです。
                 <br />
-                屋外や別室などにペットを預ける避難形態です。
+                ペットと同じ空間で過ごせます。
               </p>
               <button
                 onClick={goNext}

@@ -256,25 +256,27 @@ export default function MapView() {
   };
 
   //==ルート描画==
-
   return (
     <>
       {showSplash ? (
-        // 起動画面（ふわっと表示 → 終了でチュートリアル開始）
+        // === ① 起動画面（ふわっと表示 → 終了で導入チュートリアル開始） ===
         <SplashScreen
           onFinish={() => {
             setShowSplash(false);
-            setShowTutorial(true);
+            setShowTutorial(true); // ✅ 新導入チュートリアルを表示
           }}
         />
       ) : (
+        // === ③ 通常地図画面 ===
         <div className="relative w-full h-full overflow-hidden">
           {(isLocating || distLoading) && <LoadingSpinner />}
+
           {geoError && (
             <div className="absolute top-24 left-4 bg-red-100 text-red-700 p-2 rounded shadow">
               {geoError}
             </div>
           )}
+
           {/* 🔍 検索・フィルターUI */}
           <div className="fixed top-[72px] left-0 w-full z-50 flex flex-col items-center pointer-events-none space-y-2">
             <div className="pointer-events-auto">
@@ -370,6 +372,8 @@ export default function MapView() {
 
                 {/* 経路描画 */}
                 {directions && <DirectionsRenderer directions={directions} />}
+
+                {/* === ④ チュートリアルオーバーレイ（同行/同伴） === */}
                 {showTutorial && (
                   <div className="absolute inset-0 z-[999] pointer-events-none">
                     <TutorialOverlay

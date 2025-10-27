@@ -28,38 +28,49 @@ export default function SplashScreen({ onFinish }: Props) {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col items-center justify-center bg-white transition-opacity duration-1000 ${
+      className={`fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-white transition-opacity duration-1000 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
-      <div className="flex items-center justify-center gap-6 mb-4 animate-float">
+      {/* === ロゴ＋アイコン === */}
+      <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 animate-float px-4">
+        {/* 左：犬 */}
         <Image
           src="/assets/犬のアイコン 5.png"
           alt="犬のイラスト"
           width={90}
           height={90}
-          className="drop-shadow-lg"
+          className="drop-shadow-lg w-[18vw] sm:w-[70px] md:w-[90px] h-auto object-contain"
+          priority
         />
+
+        {/* 中央：ひなペットロゴ */}
         <Image
           src="/assets/ひなペットlogo.png"
           alt="ひなペットロゴ"
           width={220}
           height={100}
-          className="transition-transform duration-1000 ease-in-out scale-100"
+          className="transition-transform duration-1000 ease-in-out scale-100 w-[55vw] sm:w-[220px] max-w-[300px] h-auto object-contain"
+          priority
         />
+
+        {/* 右：猫 */}
         <Image
           src="/assets/ねこのアイコン.png"
           alt="猫のイラスト"
           width={90}
           height={90}
-          className="drop-shadow-lg"
+          className="drop-shadow-lg w-[18vw] sm:w-[70px] md:w-[90px] h-auto object-contain"
+          priority
         />
       </div>
 
-      <p className="text-stone-600 text-sm tracking-wide animate-fadeIn mt-2">
+      {/* === サブテキスト === */}
+      <p className="text-stone-600 text-s sm:text-sm md:text-base tracking-wide animate-fadeIn mt-2 text-center px-4">
         ペットと一緒に避難できる場所を探そう
       </p>
 
+      {/* === 装飾・アニメーション === */}
       <style jsx>{`
         @keyframes float {
           0%,
@@ -67,7 +78,7 @@ export default function SplashScreen({ onFinish }: Props) {
             transform: translateY(0);
           }
           50% {
-            transform: translateY(-10px);
+            transform: translateY(-8px);
           }
         }
         .animate-float {
