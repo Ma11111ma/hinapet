@@ -1,3 +1,4 @@
+// frontend/src/app/mypage/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,9 +7,67 @@ import { useSearchParams } from "next/navigation";
 import UserInfoForm from "../../components/UserInfoForm";
 import PetInfoPanel from "../../components/PetInfoPanel";
 import FooterNav from "@/components/FooterNav";
+// ✅ 追加：ローカル管理のお知らせを読み書き
+import { loadNotices, saveNotices } from "@/lib/localAdmin";
 
 const HEADER = 56;
 const FOOTER = 56;
+
+/** 📰 お知らせ一覧（住民UI：/mypage に表示） */
+function NoticeList() {
+  const notices = loadNotices();
+  const hasItems = notices.length > 0;
+
+  const handleMarkAllRead = () => {
+    saveNotices(
+      notices.map((n) => ({
+        ...n,
+        read: true,
+      }))
+    );
+    // 既読反映（🔔バッジ更新のため手軽にリロード）
+    location.reload();
+  };
+
+  return (
+    <div className="mt-6 bg-white border rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-stone-800">お知らせ一覧</h3>
+        {hasItems && (
+          <button
+            className="text-sm text-blue-600 underline"
+            onClick={handleMarkAllRead}
+          >
+            すべて既読
+          </button>
+        )}
+      </div>
+
+      {!hasItems ? (
+        <p className="text-sm text-stone-500">お知らせはありません</p>
+      ) : (
+        <ul className="space-y-2">
+          {notices.map((n) => (
+            <li key={n.id} className="border rounded p-3 bg-amber-50">
+              <div className="text-xs text-stone-500">
+                {new Date(n.dateISO).toLocaleString()}
+              </div>
+              <div className="font-medium">{n.title}</div>
+              {n.body && (
+                <p className="text-sm mt-1 whitespace-pre-wrap">{n.body}</p>
+              )}
+              {!n.read && (
+                <span className="ml-2 inline-block text-xs text-white bg-amber-500 rounded px-2 py-[2px]">
+                  未読
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function MyPage() {
   const { user, initialized } = useAuth();
@@ -74,7 +133,13 @@ export default function MyPage() {
         </div>
 
         <div className="mx-auto max-w-md p-4">
-          {activeTab === "user" && <UserInfoForm />}
+          {activeTab === "user" && (
+            <>
+              <UserInfoForm />
+              {/* ✅ ユーザー情報のすぐ下に「お知らせ一覧」を表示 */}
+              <NoticeList />
+            </>
+          )}
           {activeTab === "pet" && <PetInfoPanel />}
         </div>
 
