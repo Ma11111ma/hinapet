@@ -80,9 +80,18 @@ export default function MapView() {
     calculate,
     loading: distLoading,
   } = useDistanceMatrix();
+
   const [isLocating, setIsLocating] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [buttonPositions, setButtonPositions] = useState<{
+    accompany?: DOMRect;
+    companion?: DOMRect;
+  }>({});
+
+  const handleLayout = (type: ShelterType, rect: DOMRect) => {
+    setButtonPositions((prev) => ({ ...prev, [type]: rect }));
+  };
 
   const getCurrentPosition = async () => {
     if (!navigator.geolocation) {
@@ -130,6 +139,24 @@ export default function MapView() {
       calculate(currentPosition, shelters);
     }
   }, [currentPosition, shelters, calculate]);
+
+  useEffect(() => {
+    if (!showTutorial) return;
+
+    // ボタンを className で安全に特定
+    const accompanyBtn = document.querySelector(".filter-btn-accompany");
+    const companionBtn = document.querySelector(".filter-btn-companion");
+
+    if (
+      accompanyBtn instanceof HTMLElement &&
+      companionBtn instanceof HTMLElement
+    ) {
+      setButtonPositions({
+        accompany: accompanyBtn.getBoundingClientRect(),
+        companion: companionBtn.getBoundingClientRect(),
+      });
+    }
+  }, [showTutorial]);
 
   const handleSearch = (kw: string) => {
     setKeyword(kw);
@@ -230,9 +257,13 @@ export default function MapView() {
   return (
     <>
       {showSplash ? (
-        <SplashScreen onFinish={() => setShowSplash(false)} />
-      ) : showTutorial ? (
-        <TutorialOverlay onFinish={() => setShowTutorial(false)} />
+        // 起動画面（ふわっと表示 → 終了でチュートリアル開始）
+        <SplashScreen
+          onFinish={() => {
+            setShowSplash(false);
+            setShowTutorial(true);
+          }}
+        />
       ) : (
         <div className="relative w-full h-full overflow-hidden">
           {(isLocating || distLoading) && <LoadingSpinner />}
@@ -250,6 +281,7 @@ export default function MapView() {
               <ShelterTypeFilter
                 selected={selectedType}
                 onSelect={handleTypeSelect}
+                onLayout={handleLayout}
               />
             </div>
           </div>
@@ -259,106 +291,120 @@ export default function MapView() {
           ) : error ? (
             <p>{error}</p>
           ) : (
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={currentPosition || DEFAULT_LOCATION}
-              zoom={13}
-              onLoad={(map) => {
-                mapRef.current = map;
-              }}
-              options={{
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false,
-                zoomControl: true,
-                gestureHandling: "cooperative",
-                disableDefaultUI: false,
-                clickableIcons: false,
-                draggable: true,
-              }}
-            >
-              {/* 現在地ピン */}
-              {currentPosition && (
-                <Marker
-                  position={currentPosition}
-                  icon="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                  onClick={() => setShowCurrentInfo(!showCurrentInfo)}
-                />
-              )}
-
-              {/* 現在地の吹き出し */}
-              {showCurrentInfo && currentPosition && (
-                <InfoWindow
-                  position={currentPosition}
-                  onCloseClick={() => setShowCurrentInfo(false)}
-                >
-                  <div className="text-sm">
-                    <p className="font-semibold text-gray-800">現在地</p>
-                    <p className="text-gray-600">
-                      {currentPlaceName || "取得中..."}
-                    </p>
-                  </div>
-                </InfoWindow>
-              )}
-
-              {/* 避難所ピン */}
-              {sortedShelters.map((shelter) => {
-                const symbol = getShelterPinSymbol(shelter.type);
-                if (!symbol) return null;
-
-                return (
+            <div className="absolute inset-0 z-0">
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={currentPosition || DEFAULT_LOCATION}
+                zoom={13}
+                onLoad={(map) => {
+                  mapRef.current = map;
+                }}
+                options={{
+                  mapTypeControl: false,
+                  streetViewControl: false,
+                  fullscreenControl: false,
+                  zoomControl: true,
+                  gestureHandling: "cooperative",
+                  disableDefaultUI: false,
+                  clickableIcons: false,
+                  draggable: true,
+                }}
+              >
+                {/* 現在地ピン */}
+                {currentPosition && (
                   <Marker
-                    key={shelter.id}
-                    position={{ lat: shelter.lat, lng: shelter.lng }}
-                    title={shelter.name}
-                    icon={symbol}
-                    onClick={() => {
-                      setSelectedShelter(shelter);
-                      if (currentPosition) {
-                        calculateRoute(currentPosition, {
-                          lat: shelter.lat,
-                          lng: shelter.lng,
-                        });
-                      }
-                    }}
+                    position={currentPosition}
+                    icon="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                    onClick={() => setShowCurrentInfo(!showCurrentInfo)}
                   />
-                );
-              })}
+                )}
 
-              {/* 経路描画 */}
-              {directions && <DirectionsRenderer directions={directions} />}
-
-              {/* 凡例 */}
-              <MapLegend />
-
-              {/* 地図タイプ切替ボタン */}
-              <div className="absolute bottom-[120px] left-4 z-30">
-                <div className="flex bg-white rounded-full shadow-md overflow-hidden border border-gray-200">
-                  <button
-                    onClick={() => mapRef.current?.setMapTypeId("roadmap")}
-                    className="px-4 py-1 text-sm hover:bg-gray-100 border-r"
+                {/* 現在地の吹き出し */}
+                {showCurrentInfo && currentPosition && (
+                  <InfoWindow
+                    position={currentPosition}
+                    onCloseClick={() => setShowCurrentInfo(false)}
                   >
-                    地図
-                  </button>
-                  <button
-                    onClick={() => mapRef.current?.setMapTypeId("hybrid")}
-                    className="px-4 py-1 text-sm hover:bg-gray-100"
-                  >
-                    航空写真
-                  </button>
+                    <div className="text-sm">
+                      <p className="font-semibold text-gray-800">現在地</p>
+                      <p className="text-gray-600">
+                        {currentPlaceName || "取得中..."}
+                      </p>
+                    </div>
+                  </InfoWindow>
+                )}
+
+                {/* 避難所ピン */}
+                {sortedShelters.map((shelter) => {
+                  const symbol = getShelterPinSymbol(shelter.type);
+                  if (!symbol) return null;
+
+                  return (
+                    <Marker
+                      key={shelter.id}
+                      position={{ lat: shelter.lat, lng: shelter.lng }}
+                      title={shelter.name}
+                      icon={symbol}
+                      onClick={() => {
+                        setSelectedShelter(shelter);
+                        if (currentPosition) {
+                          calculateRoute(currentPosition, {
+                            lat: shelter.lat,
+                            lng: shelter.lng,
+                          });
+                        }
+                      }}
+                    />
+                  );
+                })}
+
+                {/* 経路描画 */}
+                {directions && <DirectionsRenderer directions={directions} />}
+                {showTutorial && (
+                  <div className="absolute inset-0 z-[999] pointer-events-none">
+                    <TutorialOverlay
+                      onFinish={() => setShowTutorial(false)}
+                      positions={buttonPositions}
+                    />
+                  </div>
+                )}
+
+                {/* 凡例 */}
+                <MapLegend />
+
+                {/* 地図タイプ切替ボタン */}
+                <div className="absolute bottom-[120px] left-4 z-30">
+                  <div className="flex bg-white rounded-full shadow-md overflow-hidden border border-gray-200">
+                    <button
+                      onClick={() => mapRef.current?.setMapTypeId("roadmap")}
+                      className="px-4 py-1 text-sm hover:bg-gray-100 border-r"
+                    >
+                      地図
+                    </button>
+                    <button
+                      onClick={() => mapRef.current?.setMapTypeId("hybrid")}
+                      className="px-4 py-1 text-sm hover:bg-gray-100"
+                    >
+                      航空写真
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* ✅ モバイル：ボトムシート ／ PC：右サイドパネル */}
-              {selectedShelter && (
-                <ShelterDetailPanel
-                  shelter={selectedShelter}
-                  onClose={() => setSelectedShelter(null)}
-                  distance={distances[String(selectedShelter.id)]?.text ?? "-"}
-                  duration={durations[String(selectedShelter.id)]?.text ?? "-"}
-                />
-              )}
-            </GoogleMap>
+                {/* ✅ モバイル：ボトムシート ／ PC：右サイドパネル */}
+                {selectedShelter && (
+                  <ShelterDetailPanel
+                    shelter={selectedShelter}
+                    onClose={() => setSelectedShelter(null)}
+                    distance={
+                      distances[String(selectedShelter.id)]?.text ?? "-"
+                    }
+                    duration={
+                      durations[String(selectedShelter.id)]?.text ?? "-"
+                    }
+                  />
+                )}
+              </GoogleMap>
+            </div>
           )}
         </div>
       )}
