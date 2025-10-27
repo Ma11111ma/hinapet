@@ -84,6 +84,9 @@ export default function MapView() {
   const [isLocating, setIsLocating] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState<"accompany" | "companion">(
+    "accompany"
+  );
   const [buttonPositions, setButtonPositions] = useState<{
     accompany?: DOMRect;
     companion?: DOMRect;
@@ -282,6 +285,13 @@ export default function MapView() {
                 selected={selectedType}
                 onSelect={handleTypeSelect}
                 onLayout={handleLayout}
+                highlightTarget={
+                  showTutorial
+                    ? tutorialStep === "accompany"
+                      ? "accompany"
+                      : "companion"
+                    : null
+                }
               />
             </div>
           </div>

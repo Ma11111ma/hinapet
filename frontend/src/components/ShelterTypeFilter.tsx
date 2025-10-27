@@ -5,11 +5,18 @@ type Props = {
   selected: ShelterType | null;
   onSelect: (type: ShelterType | null) => void;
   onLayout?: (type: ShelterType, rect: DOMRect) => void;
+  highlightTarget?: ShelterType | null;
 };
 
-export default function ShelterTypeFilter({ selected, onSelect }: Props) {
+export default function ShelterTypeFilter({
+  selected,
+  onSelect,
+  highlightTarget,
+}: Props) {
   const toggle = (t: ShelterType) => onSelect(selected === t ? null : t);
 
+  // 実際に強調表示する対象（チュートリアル中優先）
+  const active = highlightTarget ?? selected;
   return (
     <div className="flex justify-center gap-3 mt-2">
       {/* 🔵 同行避難 */}

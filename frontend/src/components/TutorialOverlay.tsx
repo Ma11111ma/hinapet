@@ -10,10 +10,9 @@ type Props = {
 };
 
 /**
- * ✅ 改善版チュートリアルオーバーレイ（安全版）
- * - MapViewから受け取ったpositions（DOMRect）を基準に正確な位置へ切り抜き
- * - 地図は透けて見える（透明オーバーレイ）
- * - 「次へ」でスムーズに同伴避難所へ移動
+ * ✅ チュートリアル説明オーバーレイ
+ * - フォーカスされたボタンのみ明るく残し、それ以外は暗幕で覆う
+ * - 地図は透けるが、検索窓や他ボタンは暗く見える
  */
 export default function TutorialOverlay({ onFinish, positions }: Props) {
   const [step, setStep] = useState<"accompany" | "companion">("accompany");
@@ -24,27 +23,14 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
   }, []);
 
   const goNext = () => {
-    if (step === "accompany") {
-      setStep("companion");
-    } else {
-      onFinish();
-    }
+    if (step === "accompany") setStep("companion");
+    else onFinish();
   };
 
-  // === 現在のフォーカス対象ボタン ===
   const focusRect =
     step === "accompany" ? positions?.accompany : positions?.companion;
 
-  // ⚠ positionsがまだ取れていないときは一瞬null（描画を待つ）
-  if (!focusRect) {
-    return (
-      <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-sm">
-        ロード中...
-      </div>
-    );
-  }
-
-  const focusColor = step === "accompany" ? "#3B82F6" : "#22C55E";
+  if (!focusRect) return null;
 
   return (
     <div
@@ -53,42 +39,57 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
       }`}
       style={{ pointerEvents: "none" }}
     >
-      {/* ====== 切り抜き暗幕（穴あき） ====== */}
-      <div
-        className="absolute rounded-full"
-        style={{
-          top: `${focusRect.top + window.scrollY}px`,
-          left: `${focusRect.left}px`,
-          width: `${focusRect.width}px`,
-          height: `${focusRect.height}px`,
-          borderRadius: "9999px",
-          boxShadow: "0 0 0 9999px rgba(0,0,0,0.78)",
-          transition: "all 300ms ease",
-          pointerEvents: "none",
-        }}
-      />
+      {/* === 暗幕（まず全体を暗く覆う） === */}
+      <div className="absolute inset-0 bg-black/70 z-[1]" />
 
-      {/* ====== フォーカス枠線 ====== */}
+      {/* === 切り抜きエリア（フォーカスボタンを明るく残す） === */}
+      <svg
+        className="absolute inset-0 z-[2] pointer-events-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <mask id="focusMask">
+            {/* 黒＝非表示（暗い部分）・白＝見せる部分 */}
+            <rect width="100%" height="100%" fill="black" />
+            <rect
+              x={focusRect.left}
+              y={focusRect.top}
+              width={focusRect.width}
+              height={focusRect.height}
+              rx={9999}
+              ry={9999}
+              fill="white"
+            />
+          </mask>
+        </defs>
+        {/* 背景全体にマスクを適用し、フォーカス部分のみ透過 */}
+        <rect
+          width="100%"
+          height="100%"
+          fill="rgba(0,0,0,0.7)"
+          mask="url(#focusMask)"
+        />
+      </svg>
+
+      {/* === フォーカス枠（カラー強調） === */}
       <div
-        className="absolute rounded-full"
+        className="absolute z-[3] rounded-full pointer-events-none"
         style={{
-          top: `${focusRect.top + window.scrollY - 2}px`,
+          top: `${focusRect.top - 2}px`,
           left: `${focusRect.left - 2}px`,
           width: `${focusRect.width + 4}px`,
           height: `${focusRect.height + 4}px`,
           borderRadius: "9999px",
-          border: `2px solid ${focusColor}`,
-          boxShadow: `0 0 12px 3px ${focusColor}40`,
-          transition: "all 300ms ease",
-          pointerEvents: "none",
+          border: `2px solid ${step === "accompany" ? "#3B82F6" : "#22C55E"}`,
+          boxShadow: `0 0 15px ${
+            step === "accompany" ? "#3B82F6" : "#22C55E"
+          }80`,
+          transition: "all 0.3s ease",
         }}
       />
 
-      {/* ====== 説明カード ====== */}
-      <div
-        className="absolute bottom-[160px] w-full flex justify-center pointer-events-auto"
-        style={{ zIndex: 5 }}
-      >
+      {/* === テキストカード === */}
+      <div className="absolute bottom-[240px] w-full flex justify-center pointer-events-auto z-[4]">
         <div className="w-[85%] max-w-sm bg-white rounded-2xl shadow-xl p-5 text-center">
           {step === "accompany" ? (
             <>
