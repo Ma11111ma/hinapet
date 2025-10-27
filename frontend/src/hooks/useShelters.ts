@@ -28,7 +28,9 @@ export const useShelters = () => {
           params.append("category", category);
         }
 
-        console.log("📡 Fetching shelters:", `${base}/shelters?${params}`);
+        // ✅ 修正：クエリパラメータをURLに含める
+        const url = `${base}/shelters${params.toString() ? `?${params}` : ""}`;
+        console.log("📡 Fetching shelters:", url);
 
         const res = await fetch(`${base}/shelters`);
         if (!res.ok) throw new Error(`API Error: ${res.status}`);

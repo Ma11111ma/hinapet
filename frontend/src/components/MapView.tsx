@@ -132,9 +132,8 @@ export default function MapView() {
 
   //==初回ロード時に自動で現在地と避難所取得==
   useEffect(() => {
-    fetchShelters({});
-    getCurrentPosition();
-  }, [fetchShelters]);
+    fetchShelters({ category: selectedType ?? undefined, keyword });
+  }, [selectedType, keyword, fetchShelters]);
 
   //==現在地と避難所リストが揃ったら距離を計計算
   useEffect(() => {
@@ -209,13 +208,14 @@ export default function MapView() {
         s.name.toLowerCase().includes(keyword.toLowerCase()) ||
         s.address.toLowerCase().includes(keyword.toLowerCase());
 
+      const matchType = !selectedType || s.type === selectedType;
       // 🔍 種別マッチ（同伴＝秋葉台文化体育館／同行＝それ以外）
-      let matchType = true;
-      if (selectedType === "companion") {
-        matchType = s.name.includes("秋葉台文化体育館");
-      } else if (selectedType === "accompany") {
-        matchType = !s.name.includes("秋葉台文化体育館");
-      }
+      // let matchType = true;
+      // if (selectedType === "companion") {
+      //   matchType = s.name.includes("秋葉台文化体育館");
+      // } else if (selectedType === "accompany") {
+      //   matchType = !s.name.includes("秋葉台文化体育館");
+      // }
       return matchKeyword && matchType;
     });
   }, [shelters, keyword, selectedType]);
@@ -268,7 +268,7 @@ export default function MapView() {
         />
       ) : (
         // === ③ 通常地図画面 ===
-        <div className="relative w-full h-full overflow-hidden">
+        <div className="relative w-full h-full overflow-auto">
           {(isLocating || distLoading) && <LoadingSpinner />}
 
           {geoError && (

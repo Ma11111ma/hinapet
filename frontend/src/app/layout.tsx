@@ -21,7 +21,7 @@ export default function RootLayout({
         <Header />
         <Providers>
           <LoadScript googleMapsApiKey={googleMapsApiKey}>
-            <main className="relative overflow-hidden">{children}</main>
+            <main className="relative overflow-auto">{children}</main>
           </LoadScript>
 
           <FooterNav />
