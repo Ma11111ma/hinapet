@@ -117,8 +117,6 @@ export const LoginFormUI: React.FC<Props> = ({
         Googleでログイン
       </button>
 
-      {/* ✅ 共通化した新規登録ボタン */}
-      <RegisterButton email={email} password={password} />
       {/* ✅ 新規登録リンク */}
       <div className="text-center mt-4">
         <Link
