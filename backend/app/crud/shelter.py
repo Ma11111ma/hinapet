@@ -25,6 +25,13 @@ def get_shelters(
       - lat/lng: 位置があれば ST_DWithin で半径抽出し、近い順で並べる
       - limit/offset: 軽量ページング
     """
+
+    # ✅ 追加: 日本語→英語Enum正規化
+    if type in ["同伴", "同伴避難", "同伴可"]:
+        type = "companion"
+    elif type in ["同行", "同行避難", "同行可"]:
+        type = "accompany"
+
     params: Dict[str, Any] = {"limit": limit, "offset": offset}
     sql = """
         SELECT

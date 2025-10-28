@@ -18,7 +18,7 @@ name,address,type,has_pet_space,is_emergency_flood,is_emergency_landslide,is_eme
 秋葉台小学校,遠藤2959,accompany,False,False,False,False,False,False,False,False,False,,,,2025-04-01,,,,,,
 秋葉台中学校,遠藤2000-2,accompany,False,False,False,False,False,False,False,False,False,,,,2025-04-01,,,,,,
 慶應義塾大学,遠藤5322,accompany,False,False,False,False,False,False,False,False,False,,,,2025-04-01,,,,,,
-秋葉台文化体育館,遠藤2000-1,accompany,False,False,False,False,False,False,False,False,False,,主にペット同伴避難及び車両避難用,,2025-04-01,,,,,,
+秋葉台文化体育館,遠藤2000-1,companion,False,False,False,False,False,False,False,False,False,,主にペット同伴避難及び車両避難用,,2025-04-01,,,,,,
 秋葉台公園周辺（秋葉台中含む）,遠藤2000-1他,accompany,False,False,False,False,False,False,False,False,False,,,,2025-04-01,,,,,,
 六会市民センター 【地区防災拠点本部】,亀井野4-8-1,accompany,False,False,False,False,False,False,False,False,False,,,,2025-04-01,,,,,,
 俣野小学校,西俣野2660,accompany,False,False,False,False,False,False,False,False,False,,,,2025-04-01,,,,,,
