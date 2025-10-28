@@ -17,14 +17,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="bg-amber-50 text-stone-800">
+      <body className="min-h-screen flex flex-col bg-amber-50 text-stone-800">
         <Header />
         <Providers>
           <LoadScript googleMapsApiKey={googleMapsApiKey}>
-            <main className="relative overflow-auto">{children}</main>
+            <main className="flex-1 overflow-auto">{children}</main>
           </LoadScript>
 
-          <FooterNav />
+          <div className="flex-none">
+            <FooterNav />
+          </div>
           <Toaster
             position="top-right"
             toastOptions={{

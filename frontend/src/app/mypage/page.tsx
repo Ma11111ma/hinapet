@@ -80,8 +80,6 @@ export default function MyPage() {
 
         <div className="h-3" />
       </div>
-
-      <FooterNav />
     </div>
   );
 }

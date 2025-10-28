@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function GuidancePage() {
   return (
-    <main className="max-w-3xl mx-auto p-6 bg-amber-50 min-h-screen text-stone-800">
+    <main className="max-w-3xl mx-auto p-6 bg-amber-50 text-stone-800">
       <h1 className="text-2xl font-bold mb-4">🐕‍🦺 ペットとの避難の手引き</h1>
       <p className="mb-6">
         災害時にペットと安全に避難するための基本的な備えを紹介します。詳細は

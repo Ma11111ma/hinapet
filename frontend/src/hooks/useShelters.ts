@@ -32,7 +32,7 @@ export const useShelters = () => {
         const url = `${base}/shelters${params.toString() ? `?${params}` : ""}`;
         console.log("📡 Fetching shelters:", url);
 
-        const res = await fetch(`${base}/shelters`);
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`API Error: ${res.status}`);
         const data = await res.json();
         console.log("shelters/APIレスポンスOK", data);

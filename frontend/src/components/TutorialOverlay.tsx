@@ -160,7 +160,7 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
                 onClick={goNext}
                 className="px-6 py-2 bg-[#22C55E] text-white rounded-lg shadow hover:bg-[#16A34A] transition-colors"
               >
-                閉じる
+                避難所を検索してみましょう
               </button>
             </>
           )}
