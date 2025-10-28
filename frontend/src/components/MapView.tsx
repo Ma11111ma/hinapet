@@ -131,16 +131,30 @@ export default function MapView() {
   };
 
   //==初回ロード時に自動で現在地と避難所取得==
-  useEffect(() => {
-    fetchShelters({ category: selectedType ?? undefined, keyword });
-  }, [selectedType, keyword, fetchShelters]);
 
-  //==現在地と避難所リストが揃ったら距離を計計算
   useEffect(() => {
-    if (currentPosition && shelters.length > 0) {
-      calculate(currentPosition, shelters);
+    const init = async () => {
+      await getCurrentPosition(); // ✅ まず現在地取得
+      await fetchShelters(); // ✅ その後に全件ロード
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (selectedType || keyword) {
+      fetchShelters({ category: selectedType ?? undefined, keyword });
     }
-  }, [currentPosition, shelters, calculate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedType, keyword]);
+
+  //==現在地と避難所リストが揃ったら距離を計算
+  useEffect(() => {
+    if (!currentPosition || shelters.length === 0) return;
+
+    // ✅ ロード中は再計算を防止
+    if (isLocating || distLoading) return;
+    calculate(currentPosition, shelters);
+  }, [currentPosition, shelters]);
 
   useEffect(() => {
     if (!showTutorial) return;
