@@ -9,7 +9,6 @@ import {
 } from "@react-google-maps/api";
 import { useShelters } from "../hooks/useShelters";
 import type { Shelter, ShelterType } from "../types/shelter";
-import MapLegend from "./MapLegend";
 import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { getShelterPinSymbol } from "./ShelterPin";
@@ -153,7 +152,13 @@ export default function MapView() {
 
     // ✅ ロード中は再計算を防止
     if (isLocating || distLoading) return;
-    calculate(currentPosition, shelters);
+
+    const timer = setTimeout(() => {
+      calculate(currentPosition, shelters);
+    }, 200);
+    // クリーンアップでタイマー解除（再描画時に多重実行を防ぐ）
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPosition, shelters]);
 
   useEffect(() => {
@@ -340,7 +345,12 @@ export default function MapView() {
                 {currentPosition && (
                   <Marker
                     position={currentPosition}
-                    icon="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                    icon={{
+                      url: "/pins/pin_current.png", // ← オリジナル画像を指定
+                      scaledSize: new google.maps.Size(56, 64), // ← 表示サイズを調整
+                      anchor: new google.maps.Point(32, 64), // ← ピン先端が地面に来るよう調整
+                    }}
+                    zIndex={9999}
                     onClick={() => setShowCurrentInfo(!showCurrentInfo)}
                   />
                 )}
@@ -397,11 +407,8 @@ export default function MapView() {
                   </div>
                 )}
 
-                {/* 凡例 */}
-                <MapLegend />
-
                 {/* 地図タイプ切替ボタン */}
-                <div className="absolute bottom-[120px] left-4 z-30">
+                <div className="absolute bottom-[80px] left-4 z-30">
                   <div className="flex bg-white rounded-full shadow-md overflow-hidden border border-gray-200">
                     <button
                       onClick={() => mapRef.current?.setMapTypeId("roadmap")}
