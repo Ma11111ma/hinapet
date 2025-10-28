@@ -4,36 +4,31 @@
 export type ShelterKind = "accompany" | "companion";
 
 /**
- * Google Maps Marker 用のシンボル（SVGパス）を返す。
- * - type に応じて色を統一
- * - isSelected なら少し大きく
+ * Google Maps Marker 用のカスタムピン画像を返す
+ * - 同行避難: 青ピン（同行避難アイコン.png）
+ * - 同伴避難: 緑ピン（同伴避難アイコン.png）
  */
 export function getShelterPinSymbol(
   type: ShelterKind,
   isSelected = false
-): google.maps.Symbol | null {
-  // ✅ Google Maps SDK 未読み込み時は null を返して安全にスキップ
+): google.maps.Icon | null {
   if (typeof window === "undefined" || !("google" in window)) {
     return null;
   }
 
-  const googleObj = window.google as typeof google | undefined;
-  if (!googleObj?.maps) return null;
+  // 表示サイズを指定（選択時は拡大）
+  const size = isSelected ? 66 : 54;
 
-  const fillColor = type === "accompany" ? "#1D4ED8" : "#16A34A"; // 青/緑
-  const scale = isSelected ? 1.1 : 1.0;
-
-  // マップピンっぽいパス（円でもOKですが視認性重視でピン型）
-  const path =
-    "M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z";
+  // ピン画像URLを種別で切り替え
+  const url =
+    type === "accompany"
+      ? "/pins/pin_accompany.png" // 同行避難ピン（青ベース）
+      : "/pins/pin_companion.png"; // 同伴避難ピン（緑ベース）
 
   return {
-    path,
-    fillColor,
-    fillOpacity: 1,
-    strokeColor: "#ffffff",
-    strokeWeight: 2,
-    scale, // 1.0 基準（path の座標系に依存）
-    anchor: new google.maps.Point(12, 24), // 底辺が地面を指すよう調整
+    url,
+    scaledSize: new google.maps.Size(size, size),
+    anchor: new google.maps.Point(size / 2, size - 4), // ピン先端が地面を指す
+    labelOrigin: new google.maps.Point(size / 2, size - 10),
   };
 }
