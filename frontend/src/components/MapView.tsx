@@ -80,6 +80,19 @@ export default function MapView() {
     loading: distLoading,
   } = useDistanceMatrix();
 
+  // === 追加: ピン/ボタン共通の「選択＋カメラ移動＋ルート描画」ハンドラ
+  const goToShelterAndRoute = (s: Shelter) => {
+    setSelectedShelter(s);
+    mapRef.current?.panTo({ lat: s.lat, lng: s.lng });
+    mapRef.current?.setZoom(15);
+    if (currentPosition) {
+      calculateRoute(currentPosition, { lat: s.lat, lng: s.lng });
+    }
+  };
+
+  // === 追加: 「同伴」ボタンクリック後の自動ルートを一度だけ実行するためのフラグ
+  const hasAutoRoutedRef = useRef(false);
+
   const [isLocating, setIsLocating] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -179,6 +192,21 @@ export default function MapView() {
     }
   }, [showTutorial]);
 
+  useEffect(() => {
+    if (
+      selectedType === "companion" &&
+      !hasAutoRoutedRef.current &&
+      currentPosition &&
+      shelters.length > 0
+    ) {
+      const companion = shelters.find((s) => s.type === "companion");
+      if (companion) {
+        goToShelterAndRoute(companion);
+        hasAutoRoutedRef.current = true; // 多重発火防止
+      }
+    }
+  }, [selectedType, shelters, currentPosition]);
+
   const handleSearch = (kw: string) => {
     setKeyword(kw);
     // shelter名または住所に部分一致するものを探す
@@ -211,11 +239,26 @@ export default function MapView() {
     setKeyword("");
     setSelectedType(null);
   };
+
   const handleTypeSelect = (t: ShelterType | null) => {
     if (!t) {
+      // ボタン解除時：全リセット
       setSelectedType(null);
-    } else {
-      setSelectedType(selectedType === t ? null : t);
+      setSelectedShelter(null);
+      setDirections(null);
+      hasAutoRoutedRef.current = false;
+      return;
+    }
+
+    // トグル動作（同行/同伴の切替）を維持
+    const next = selectedType === t ? null : t;
+    setSelectedType(next);
+
+    // 「同伴」以外、または解除時はリセット
+    if (t !== "companion" || next === null) {
+      hasAutoRoutedRef.current = false;
+      setSelectedShelter(null);
+      setDirections(null);
     }
   };
 
@@ -381,15 +424,7 @@ export default function MapView() {
                       position={{ lat: shelter.lat, lng: shelter.lng }}
                       title={shelter.name}
                       icon={symbol}
-                      onClick={() => {
-                        setSelectedShelter(shelter);
-                        if (currentPosition) {
-                          calculateRoute(currentPosition, {
-                            lat: shelter.lat,
-                            lng: shelter.lng,
-                          });
-                        }
-                      }}
+                      onClick={() => goToShelterAndRoute(shelter)}
                     />
                   );
                 })}
