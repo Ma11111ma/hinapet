@@ -20,19 +20,24 @@ export default function FooterNav() {
     return () => unsubscribe();
   }, []);
 
-  const handleAuthClick = async () => {
-    if (user) {
-      // ログアウト処理
-      await signOut(auth);
-      setUser(null);
-    } else {
-      // ログインページへ遷移
-      window.location.href = "/login";
+  // ✅ 外側クリックで閉じる
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const menu = document.getElementById("footer-menu");
+      if (menu && !menu.contains(e.target as Node)) {
+        setOpenMenu(false);
+      }
+    };
+    if (openMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-  };
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenu]);
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-[#FFF3D9] border-t border-[#F6A93A]/30 shadow-sm z-20 flex justify-around py-2 relative">
+    <nav className="fixed bottom-0 left-0 w-full bg-[#FFF3D9] border-t border-[#F6A93A]/30 shadow-sm z-30 flex justify-around py-2">
       {/* マイページ */}
       <Link
         href="/mypage"
@@ -63,7 +68,7 @@ export default function FooterNav() {
       {/* メニュー */}
       <div className="flex flex-col items-center relative">
         <button
-          onClick={() => setOpenMenu((v) => !v)}
+          onClick={() => setOpenMenu((prev) => !prev)}
           className="flex flex-col items-center text-[#8B4A18] hover:text-[#F6A93A] transition focus:outline-none"
           aria-expanded={openMenu}
           aria-controls="footer-menu"
@@ -72,21 +77,21 @@ export default function FooterNav() {
           <span className="text-xs mt-0.5 font-medium">メニュー</span>
         </button>
 
-        {/* メニュー展開部分（上方向にアニメーション） */}
+        {/* ✅ メニュー展開 */}
         <AnimatePresence>
           {openMenu && (
             <motion.div
               id="footer-menu"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: -10 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.18 }}
+              key="menu"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: -8 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
               className="
-        absolute bottom-12 right-0 z-50
-        w-[min(88vw,16rem)] sm:w-64
-        max-h-[70vh] overflow-y-auto
-        bg-white rounded-2xl shadow-lg border border-amber-100
-      "
+                absolute bottom-[60px] right-0
+                z-[9999]
+                w-[min(88vw,15rem)]
+              "
             >
               <MenuAccordion onClose={() => setOpenMenu(false)} />
             </motion.div>

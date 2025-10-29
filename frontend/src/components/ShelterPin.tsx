@@ -17,7 +17,7 @@ export function getShelterPinSymbol(
   }
 
   // 表示サイズを指定（選択時は拡大）
-  const size = isSelected ? 66 : 54;
+  const size = isSelected ? 58 : 46;
 
   // ピン画像URLを種別で切り替え
   const url =

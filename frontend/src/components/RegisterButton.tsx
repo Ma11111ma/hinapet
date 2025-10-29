@@ -51,7 +51,7 @@ export const RegisterButton: React.FC<Props> = ({
         type="button"
         onClick={handleRegister}
         disabled={loading}
-        className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 disabled:opacity-50"
+        className="bg-amber-500 text-white py-2 px-4 rounded-md hover:bg-amber-800 disabled:opacity-50"
       >
         {loading ? "登録中..." : "新規登録"}
       </button>
