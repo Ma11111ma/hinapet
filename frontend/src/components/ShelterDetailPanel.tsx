@@ -243,14 +243,14 @@ export default function ShelterDetailPanel({
                 混雑度：
                 <span
                   className={
-                    shelter.crowd_level === "empty"
-                      ? "text-green-600 font-semibold"
+                    shelter.crowd_level === "full"
+                      ? "text-red-600 font-semibold"
                       : shelter.crowd_level === "few"
                       ? "text-yellow-600 font-semibold"
-                      : "text-red-600 font-semibold"
+                      : "text-green-600 font-semibold"
                   }
                 >
-                  {crowdLabelMap[shelter.crowd_level ?? "full"]}
+                  {crowdLabelMap[shelter.crowd_level ?? "empty"]}
                 </span>
               </p>
               <p>距離：約 {distance}</p>

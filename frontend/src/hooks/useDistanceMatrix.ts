@@ -44,7 +44,7 @@ export function useDistanceMatrix() {
                   text: "徒歩 22分",
                   value: 1320,
                 };
-              } else if (s.name?.includes("大道中学校")) {
+              } else if (s.name?.includes("大道小学校")) {
                 mockDistances[String(s.id)] = { text: "130 m", value: 130 };
                 mockDurations[String(s.id)] = { text: "徒歩 2分", value: 120 };
               } else {
