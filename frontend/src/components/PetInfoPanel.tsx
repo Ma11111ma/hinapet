@@ -3,16 +3,16 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import PetRegisterForm from "@/components/PetRegisterForm";
 import { PetForm } from "../components/PetRegisterForm";
+import PremiumModal from "@/components/PremiumModal";
 
-/** 🐾 チェックリスト項目型 */
 type ChecklistItem = {
   id: string;
   name: string;
   checked: boolean;
   expiry?: string;
+  lastVaccineDate?: string;
 };
 
-/** 🐕 ペット情報型 */
 type PetData = {
   id: string;
   name: string;
@@ -32,8 +32,8 @@ export default function PetInfoPanel() {
   const [pets, setPets] = useState<PetData[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [showPremiumModal, setShowPremiumModal] = useState(false); // ←追加
 
-  /** ✅ ペット情報を localStorage から読み込み */
   useEffect(() => {
     const savedPets = localStorage.getItem("pets");
     if (savedPets) {
@@ -45,13 +45,11 @@ export default function PetInfoPanel() {
     }
   }, []);
 
-  /** ✅ ペット情報を localStorage に保存 */
   const savePets = (newPets: PetData[]) => {
     setPets(newPets);
     localStorage.setItem("pets", JSON.stringify(newPets));
   };
 
-  /** ✅ ペット追加 */
   const addPet = () => {
     const newPet: PetData = {
       id: crypto.randomUUID(),
@@ -60,23 +58,22 @@ export default function PetInfoPanel() {
     savePets([...pets, newPet]);
   };
 
-  /** ✅ ペット更新（フォームから受け取る） */
   const updatePet = (id: string, updated: Partial<PetData>) => {
     const newList = pets.map((p) => (p.id === id ? { ...p, ...updated } : p));
     savePets(newList);
   };
 
-  /** ✅ ペット削除 */
   const removePet = (id: string) => {
     if (!confirm("このペット情報を削除しますか？")) return;
     const updated = pets.filter((p) => p.id !== id);
     savePets(updated);
   };
 
-  /** ✅ 初期チェックリスト */
   const defaultChecklist: ChecklistItem[] = [
     { id: crypto.randomUUID(), name: "フード（5日分）", checked: false },
     { id: crypto.randomUUID(), name: "水（5日分）", checked: false },
+    { id: crypto.randomUUID(), name: "狂犬病予防接種証明書", checked: false },
+    { id: crypto.randomUUID(), name: "混合ワクチン接種証明書", checked: false },
     { id: crypto.randomUUID(), name: "食器", checked: false },
     { id: crypto.randomUUID(), name: "処方薬", checked: false },
     { id: crypto.randomUUID(), name: "リード", checked: false },
@@ -95,7 +92,6 @@ export default function PetInfoPanel() {
     { id: crypto.randomUUID(), name: "ペットシーツ・新聞紙", checked: false },
   ];
 
-  /** ✅ チェックリスト localStorage 読み込み */
   useEffect(() => {
     const saved = localStorage.getItem("pet-checklist");
     if (saved) {
@@ -105,21 +101,18 @@ export default function PetInfoPanel() {
     }
   }, []);
 
-  /** ✅ チェック更新 */
   const toggleCheck = (id: string) => {
     setChecklist((prev) =>
       prev.map((i) => (i.id === id ? { ...i, checked: !i.checked } : i))
     );
   };
 
-  /** ✅ 賞味期限更新 */
   const updateExpiry = (id: string, date: string) => {
     setChecklist((prev) =>
       prev.map((i) => (i.id === id ? { ...i, expiry: date } : i))
     );
   };
 
-  /** ✅ 一括保存 */
   const handleSaveAll = () => {
     localStorage.setItem("pet-checklist", JSON.stringify(checklist));
     alert("チェックリストを更新しました！");
@@ -136,7 +129,6 @@ export default function PetInfoPanel() {
             key={p.id}
             className="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden"
           >
-            {/* ヘッダー */}
             <div
               onClick={() => setExpanded(expanded === p.id ? null : p.id)}
               className="flex justify-between items-center w-full px-4 py-3 text-left font-semibold bg-amber-100 hover:bg-amber-200 transition cursor-pointer border-b border-stone-200"
@@ -149,8 +141,6 @@ export default function PetInfoPanel() {
                     removePet(p.id);
                   }}
                   className="text-red-500 hover:text-red-700 cursor-pointer"
-                  role="button"
-                  aria-label="削除"
                 >
                   <Trash2 size={18} />
                 </div>
@@ -158,7 +148,6 @@ export default function PetInfoPanel() {
               </div>
             </div>
 
-            {/* 展開部分 */}
             {expanded === p.id && (
               <div className="p-4 bg-amber-50">
                 <PetRegisterForm
@@ -192,78 +181,74 @@ export default function PetInfoPanel() {
 
       {/* チェックリスト */}
       <section className="mt-6 bg-white rounded-2xl shadow-sm p-5 border border-stone-200">
-        <button
-          onClick={() =>
-            setExpanded(expanded === "checklist" ? null : "checklist")
-          }
-          className="w-full text-left flex items-center justify-between font-semibold text-lg text-stone-700 hover:text-amber-700 transition"
-        >
-          🧳 ペット持ち物チェックリスト
-          {expanded === "checklist" ? (
-            <ChevronUp className="text-amber-600" />
-          ) : (
-            <ChevronDown className="text-amber-600" />
-          )}
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setShowPremiumModal(true)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-amber-100 hover:bg-amber-200 rounded-xl transition"
+          >
+            <span className="font-semibold text-lg text-stone-800 flex items-center gap-2">
+              🧳 ペット持ち物チェックリスト
+            </span>
+          </button>
+        </div>
 
-        <div
-          className={`transition-all duration-500 ease-in-out ${
-            expanded === "checklist" ? "mt-4" : "mt-2"
-          }`}
-        >
-          <ul className="space-y-3">
-            {checklist.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between border-b border-stone-200 pb-2"
-              >
-                <label className="flex items-center gap-2 flex-1">
-                  <input
-                    type="checkbox"
-                    checked={item.checked}
-                    onChange={() => toggleCheck(item.id)}
-                    className="w-5 h-5 accent-amber-500"
-                  />
-                  <span
-                    className={`transition text-sm ${
-                      item.checked
-                        ? "line-through text-gray-400"
-                        : "text-stone-700"
-                    }`}
-                  >
-                    {item.name}
-                  </span>
-                </label>
-
-                {item.name.includes("フード") && (
-                  <div className="flex flex-col items-start ml-2">
-                    <label className="text-xs text-stone-500 mb-1">
-                      賞味期限
-                    </label>
-                    <input
-                      type="date"
-                      value={item.expiry ?? ""}
-                      onChange={(e) => updateExpiry(item.id, e.target.value)}
-                      className="appearance-none border border-stone-300 rounded px-2 py-1 text-sm"
-                      onFocus={(e) => e.target.showPicker?.()}
-                    />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-
-          {/* 一括更新 */}
-          <div className="mt-4 text-right">
-            <button
-              onClick={handleSaveAll}
-              className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 transition"
+        <ul className="mt-4 space-y-3">
+          {checklist.map((item) => (
+            <li
+              key={item.id}
+              className="flex items-center justify-between border-b border-stone-200 pb-2"
             >
-              更新する
-            </button>
-          </div>
+              <label className="flex items-center gap-2 flex-1">
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  onChange={() => toggleCheck(item.id)}
+                  className="w-5 h-5 accent-amber-500"
+                />
+                <span
+                  className={`transition text-sm ${
+                    item.checked
+                      ? "line-through text-gray-400"
+                      : "text-stone-700"
+                  }`}
+                >
+                  {item.name}
+                </span>
+              </label>
+
+              {item.name.includes("フード") && (
+                <div className="flex flex-col items-start ml-2">
+                  <label className="text-xs text-stone-500 mb-1">
+                    賞味期限
+                  </label>
+                  <input
+                    type="date"
+                    value={item.expiry ?? ""}
+                    onChange={(e) => updateExpiry(item.id, e.target.value)}
+                    className="appearance-none border border-stone-300 rounded px-2 py-1 text-sm"
+                  />
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/* 一括更新 */}
+        <div className="mt-4 text-right">
+          <button
+            onClick={handleSaveAll}
+            className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 transition"
+          >
+            更新する
+          </button>
         </div>
       </section>
+
+      {/* プレミアムモーダル */}
+      <PremiumModal
+        show={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+      />
     </div>
   );
 }
