@@ -107,21 +107,21 @@ export default function TutorialOverlay({ onFinish, positions }: Props) {
         <div className="w-[85%] max-w-sm bg-white rounded-2xl shadow-xl p-5 text-center">
           {step === "intro" && (
             <>
-              <h2 className="text-lg font-bold text-[#8B4A18] mb-2">
+              <h2 className="text-lg font-bold text-[#2c1300] mb-2">
                 ひなペットとは？
               </h2>
-              <p className="font-semibold text-stone-600 text-m mb-4 leading-relaxed">
+              <p className=" text-stone-600 text-m mb-4 leading-relaxed">
                 ひなペットは災害時のペット避難を
                 <br />
-                サポートする地図アプリです🐾
+                サポートする地図アプリです 🐾
                 <br />
-                ペットを連れて行ける近くの避難所を
+                ペットと行ける近くの避難所を
                 <br />
-                地図でパッと探せます。
+                地図上から探せます。
               </p>
               <button
                 onClick={goNext}
-                className="px-6 py-2 bg-[#3B82F6] text-white rounded-lg shadow hover:bg-[#2563EB] transition-colors"
+                className="px-6 py-2 bg-[#ffa600] text-white rounded-lg shadow hover:bg-[#9b7f4c] transition-colors"
               >
                 次へ
               </button>

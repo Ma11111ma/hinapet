@@ -9,9 +9,10 @@ export default function MenuAccordion({ onClose }: Props) {
 
   const go = (path: string) => {
     onClose();
-    router.push(path);
+    setTimeout(() => {
+      router.push(path);
+    }, 100);
   };
-
   const items: { label: string; path: string }[] = [
     { label: "ペット避難の手引き", path: "/guidance" },
     { label: "ユーザー情報", path: "/mypage?tab=user" },
@@ -19,18 +20,31 @@ export default function MenuAccordion({ onClose }: Props) {
     { label: "ペット持ち物チェックリスト", path: "/mypage?tab=pet#checklist" },
     { label: "お知らせ", path: "/mypage?tab=user#news" },
     {
-      label: "避難状況チェック（プレミアム）",
+      label: "避難状況チェック",
       path: "/mypage?tab=user#status",
     },
   ];
 
   return (
-    <div className="flex flex-col divide-y">
+    <div
+      className="
+        absolute
+        bottom-[1px] right-1 z-[9999]
+        w-[min(88vw,15rem)] max-h-[70vh]
+        flex flex-col
+        overflow-y-auto
+        bg-amber-50
+        border border-amber-100
+        rounded-lg
+        shadow-md
+        divide-y divide-amber-100
+      "
+    >
       {items.map((item) => (
         <button
           key={item.path}
           onClick={() => go(item.path)}
-          className="p-3 text-left hover:bg-amber-50"
+          className="w-full p-3 text-left text-stone-700 hover:bg-amber-100 transition"
         >
           {item.label}
         </button>
@@ -38,11 +52,11 @@ export default function MenuAccordion({ onClose }: Props) {
 
       <button
         onClick={async () => {
+          onClose(); // ✅ ログアウト時も即閉じる
           await signOut(auth);
-          onClose();
-          router.push("/login");
+          setTimeout(() => router.push("/login"), 100);
         }}
-        className="p-3 text-left text-red-600 hover:bg-red-50"
+        className="w-full p-3 text-left text-red-700 hover:bg-red-50 transition"
       >
         ログアウト
       </button>

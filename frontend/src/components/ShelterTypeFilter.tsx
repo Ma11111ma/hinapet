@@ -22,7 +22,7 @@ export default function ShelterTypeFilter({
       {/* 🔵 同行避難 */}
       <button
         // 👇 チュートリアル用クラス名を追加（既存デザインはそのまま）
-        className={`filter-btn-accompany px-3 py-1.5 rounded-full border text-sm font-medium transition ${
+        className={`filter-btn-accompany px-3 py-1.5 rounded-full border text-m font-bold transition ${
           selected === "accompany"
             ? "bg-blue-600 text-white border-blue-600"
             : "bg-white text-blue-600 border-blue-400 hover:bg-blue-50"
@@ -35,7 +35,7 @@ export default function ShelterTypeFilter({
       {/* 🟢 同伴避難 */}
       <button
         // 👇 同伴避難用クラス名を追加
-        className={`filter-btn-companion px-3 py-1.5 rounded-full border text-sm font-medium transition ${
+        className={`filter-btn-companion px-3 py-1.5 rounded-full border text-m font-bold transition ${
           selected === "companion"
             ? "bg-green-600 text-white border-green-600"
             : "bg-white text-green-600 border-green-400 hover:bg-green-50"

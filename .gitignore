@@ -47,3 +47,17 @@ frontend/.env.production
 backend/.coverage
 htmlcov/
 
+#  Test / Coverage / Playwright
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+playwright/.screenshots/
+playwright/.videos/
+
+#  Vitest coverage
+.vitest/
+coverage-final.json
+
+#  Temp
+*.tmp
