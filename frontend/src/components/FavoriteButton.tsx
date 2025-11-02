@@ -59,6 +59,7 @@ export const FavoriteButton = memo(function FavoriteButton({
       type="button"
       onClick={handleClick}
       disabled={busy}
+      data-testid="favorite-button"
       aria-pressed={fav}
       // ✅ hover時に影・スケール・透過度を加える
       className={`relative text-2xl leading-none transition-all duration-200 ease-in-out transform 
