@@ -42,6 +42,7 @@ frontend/.env.production
 /backend/.env
 /backend/.env.production
 /backend/secrets/*.json
+backend/secrets/firebase-admin-key.json
 
 # Coverage reports
 backend/.coverage

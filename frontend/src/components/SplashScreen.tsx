@@ -36,7 +36,7 @@ export default function SplashScreen({ onFinish }: Props) {
       <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 animate-float px-4">
         {/* 左：犬 */}
         <Image
-          src="/assets/犬のアイコン 5.png"
+          src="/assets/inu_icon.png"
           alt="犬のイラスト"
           width={90}
           height={90}
@@ -46,7 +46,7 @@ export default function SplashScreen({ onFinish }: Props) {
 
         {/* 中央：ひなペットロゴ */}
         <Image
-          src="/assets/ひなペットlogo.png"
+          src="/assets/hinapet_logo.png"
           alt="ひなペットロゴ"
           width={220}
           height={100}
@@ -56,7 +56,7 @@ export default function SplashScreen({ onFinish }: Props) {
 
         {/* 右：猫 */}
         <Image
-          src="/assets/ねこのアイコン.png"
+          src="/assets/neko_icon.png"
           alt="猫のイラスト"
           width={90}
           height={90}
